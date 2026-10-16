@@ -1,0 +1,83 @@
+.
+|____app
+| |____Backend
+| | |____Controllers
+| | | |____HomeController.php
+| | |____Models
+| | |____Views
+| |____Frontend
+| | |____Controllers
+| | | |____HomeController.php
+| | |____Models
+| | |____Views
+| |____Middleware
+| | |____CsrfMiddleware.php
+| | |____SecurityHeaders.php
+| |____Models
+| | |____User.php
+| |____Repositories
+| | |____Contracts
+| | | |____UserRepositoryInterface.php
+| | |____UserRepository.php
+| |____Services
+| | |____UserService.php
+| |____Views
+| | |____home
+| | | |____index.php
+| | |____layouts
+| | | |____main.php
+|____composer.json
+|____composer.lock
+|____config
+| |____app.php
+| |____database.php
+|____core
+| |____Application.php
+| |____Config.php
+| |____Container.php
+| |____Controller.php
+| |____Csrf.php
+| |____Database.php
+| |____Env.php
+| |____ExceptionHandler.php
+| |____helpers.php
+| |____HttpException.php
+| |____MiddlewareInterface.php
+| |____Migrator.php
+| |____Request.php
+| |____Response.php
+| |____Router.php
+| |____Session.php
+| |____View.php
+|____database
+| |____migrate.php
+| |____migrations
+| | |____001_create_users.sql
+|____docker
+| |____apache
+| | |____vhost.conf
+| |____php
+| | |____Dockerfile
+| | |____opcache.ini
+|____docker-compose.yml
+|____MVC_INFO.txt
+|____package.json
+|____project_structure.txt
+|____public
+| |____build
+| |____index.php
+|____README.md
+|____resources
+| |____css
+| | |____app.css
+| |____js
+| | |____app.js
+| | |____bridge.js
+| | |____components
+| | | |____Counter.vue
+|____routes
+| |____web.php
+|____storage
+| |____logs
+| | |____app.log
+|____vite.config.js

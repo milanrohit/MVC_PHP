@@ -1,100 +1,248 @@
+# Custom PHP MVC Framework & Environment Documentation
+
+A modern, high-performance, and secure custom PHP MVC application architecture engineered to match 2026 industry-standard engineering guidelines. This platform implements a fully containerized environment separating Public Frontend and Secure Backend (Admin) domain contexts while keeping business logic and data layer access central and unified.
+
+---
+
+## 📁 1. Directory Tree & Architecture Blueprint
+
+```text
 my-mvc-project/
+├── .github/
+│   └── workflows/
+│       └── ci.yml               # Automated 2026 CI/CD testing pipeline
 ├── app/
-│   ├── Controllers/        HomeController.php
-│   ├── Models/             User.php
-│   ├── Repositories/       UserRepository.php (+ Contracts/)
-│   ├── Services/           UserService.php
-│   ├── Middleware/         CsrfMiddleware.php, SecurityHeaders.php
-│   └── Views/
-│       ├── layouts/        main.php
-│       └── home/           index.php
-├── core/
-│   ├── Application.php     bootstrap + container
-│   ├── Container.php       tiny DI
-│   ├── Router.php          base-path agnostic
-│   ├── Request.php / Response.php
-│   ├── Controller.php      base controller (CSRF, render, json)
-│   ├── Database.php        PDO singleton + factory
-│   ├── Config.php / Env.php
-│   ├── Session.php / Csrf.php
-│   ├── View.php
+│   ├── Backend/                 # Secure Enterprise Admin Architecture
+│   │   └── Controllers/
+│   │       └── DashboardController.php
+│   ├── Frontend/                # Public Customer-Facing Architecture
+│   │   └── Controllers/
+│   │       └── HomeController.php
+│   ├── Middleware/              # Global Request/Response Interceptors
+│   │   ├── CsrfMiddleware.php
+│   │   └── SecurityHeaders.php
+│   ├── Models/                  # Shared Global Active Records
+│   │   └── User.php
+│   ├── Repositories/            # Shared Data Access Decoupling Layer
+│   │   ├── Contracts/
+│   │   │   └── UserRepositoryInterface.php
+│   │   └── UserRepository.php
+│   ├── Services/                # Shared Cross-Domain Application Logic
+│   │   └── UserService.php
+│   └── Views/                   # Strict Presentation Boundaries
+│       ├── backend/             # Admin Control Layout Templates
+│       │   └── dashboard/
+│       │       └── index.php
+│       └── frontend/            # Client Presentation Layout Templates
+│           ├── home/
+│           │   └── index.php
+│           └── layouts/
+│               └── main.php
+├── config/                      # Immutable Context Manifests
+│   ├── app.php
+│   └── database.php
+├── core/                        # Absolute Engine Core (Zero External Dependencies)
+│   ├── Application.php          # Core Micro-DI Container & Service Lifecycle Manager
+│   ├── Config.php
+│   ├── Container.php
+│   ├── Controller.php           # Base Controller Blueprint
+│   ├── Csrf.php
+│   ├── Database.php             # Unified PDO Singleton Factory Pattern
+│   ├── Env.php
 │   ├── ExceptionHandler.php
-│   ├── Migrator.php
-│   └── helpers.php         e(), url(), asset(), csrf_field()
-├── config/                 app.php, database.php
-├── routes/                 web.php
-├── database/migrations/    001_create_users.sql
-├── resources/
-│   ├── css/app.css         @import "tailwindcss";
+│   ├── helpers.php              # Global Scope Utilities (e(), url(), asset())
+│   ├── HttpException.php
+│   ├── MiddlewareInterface.php
+│   ├── Migrator.php             # Framework Native Migration Blueprint
+│   ├── Request.php
+│   ├── Response.php
+│   ├── Router.php               # Base-Path Agnostic Decoupled Multiplex Engine
+│   ├── Session.php
+│   └── View.php                 # Deterministic Template Compilation Engine
+├── database/
+│   └── migrations/              # Incremental Core Database Schemas
+│       └── 001_create_users.sql
+├── docker/                      # Production-Grade Container Environments
+│   ├── apache/
+│   │   └── vhost.conf           # Strict Apache2 VirtualHost Module Controller
+│   └── php/
+│       ├── Dockerfile           # Optimized Base: PHP 8.4-Apache + OPcache + Multi-layer Caching
+│       └── opcache.ini          # Bytecode Performance Tuning Manifest
+├── public/                      # Public Document Root (Only Public Facing Access Pathway)
+│   ├── .htaccess                # Apache Request Rewrite Rule Engine
+│   ├── index.php                # System Application Bootstrapper Front Controller
+│   └── build/                   # Compiled & Versioned Static Assets
+├── resources/                   # Uncompiled Asset Source Pipeline
+│   ├── css/
+│   │   └── app.css              # PostCSS / Tailwind CSS Compilation Source
 │   └── js/
-│       ├── app.js          bootstrap: jQuery + Vue bridge
-│       ├── bridge.js       window.$ / mountIslands()
-│       └── components/     Counter.vue
-├── public/
-│   ├── index.php           front controller
-│   ├── .htaccess
-│   └── build/              compiled assets (committed)
-├── storage/logs/           .gitkeep
-├── docker/
-│   ├── php/Dockerfile      php:8.4-apache
-│   └── apache/vhost.conf
-├── .github/workflows/ci.yml
-├── .htaccess               XAMPP root redirect into /public
-├── docker-compose.yml      app + db (+ optional phpMyAdmin)
+│       ├── app.js               # Core Native JS / Vue Island Mount Initialization
+│       ├── bridge.js            # Unified Context Window State Bridge Selector
+│       └── components/
+│           └── Counter.vue      # Dynamic Single File Component Frontend Island
+├── routes/
+│   └── web.php                  # Central Context Explicit Router Registrar
+├── storage/
+│   └── logs/
+│       └── app.log              # Persistent Framework Runtime Diagnostic Log streams
+├── .dockerignore
 ├── .env.example
-├── .gitignore / .dockerignore
-├── composer.json           PSR-4 only, zero runtime deps
-├── package.json / vite.config.js
-└── README.md               run steps for both environments
+├── .gitignore
+├── .htaccess                    # Root Fallback Redirect to Public Path (XAMPP Compatibility)
+├── composer.json                # Modern PSR-4 Autoloading Definition Object
+├── docker-compose.yml           # Local Multi-Container Services Orchestration
+├── package.json
+├── README.md                    # Explicit Boot & Operations Document Manual
+└── vite.config.js               # Multi-Paradigm Build Pipeline Architecture Configuration
+```
 
+---
 
+## 🏷️ 2. Core PSR-4 Namespace Standards
 
+To support automatic class detection across the architecture, headers inside components must conform to this blueprint mapping layout:
 
+| File Path Location | Explicit PHP Namespace Protocol Header |
+| :--- | :--- |
+| `app/Backend/Controllers/DashboardController.php` | `namespace App\Backend\Controllers;` |
+| `app/Frontend/Controllers/HomeController.php` | `namespace App\Frontend\Controllers;` |
+| `app/Middleware/CsrfMiddleware.php` | `namespace App\Middleware;` |
+| `app/Models/User.php` | `namespace App\Models;` |
+| `app/Repositories/UserRepository.php` | `namespace App\Repositories;` |
+| `app/Services/UserService.php` | `namespace App\Services;` |
+| `core/Application.php` | `namespace Core;` |
 
+---
 
-NOTE: TO Establish of this mvc:
-Now that your core Docker image is built and your custom framework dependencies are installed, you need a clean, repeatable checklist to spin up, manage, or reset your project from scratch anytime.
-Since you mentioned you are setting things up from scratch, here is your Complete Step-by-Step Command Playbook for your daily development workflow in Git Bash.
+## 🐋 3. Core Environment Manifest Optimization File Blocks
 
-🚀 Step 1: Start Your Project From Scratch
+### Dockerfile (`docker/php/Dockerfile`)
+```dockerfile
+FROM php:8.4-apache
 
-Run this sequence anytime you boot up your computer or open your project directory for the first time to bring your database and web server online:
-bash
-docker compose up -d
-Use code with caution.
-• Verify it works: Open your browser and navigate to http://localhost:8080.
+# 1. Install minimum required system utilities and drop temporary apt-caches
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    unzip \
+    zip \
+    && docker-php-ext-install pdo pdo_mysql opcache \
+    && a2enmod rewrite headers \
+    && rm -rf /var/lib/apt/lists/*
 
-📦 Step 2: Sync and Install Dependencies
+# 2. Inject optimal production configuration baselines
+RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+COPY docker/php/opcache.ini $PHP_INI_DIR/conf.d/opcache.ini
 
-If you add new packages to your custom framework or pull changes from Git, run this to keep your container packages synchronized:
-bash
-docker compose exec app composer install
-Use code with caution.
+# 3. Pull secure Composer engine
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-💾 Step 3: Database & Migration Management
+# 4. Bind virtual host settings
+COPY docker/apache/vhost.conf /etc/apache2/sites-available/000-default.conf
 
-Because your framework uses custom routing and a MySQL container, you need commands to verify your database connection or seed schemas:
-• Enter your MySQL Database CLI directly:bash
-docker compose exec db mysql -u root -p
-Use code with caution.
-(It will ask for your password; type secret or your designated .env string).
-• Run a custom PHP database migration script (if your framework has one):bash
-docker compose exec app php bin/migrate.php
-Use code with caution.
-(Replace bin/migrate.php with the actual path to your framework's custom CLI entry point).
+WORKDIR /var/www/html
 
-🛑 Step 4: Stop Your Project Cleanly
+# 5. Fix permissions for execution stability
+RUN chown -R www-data:www-data /var/www/html
+```
 
-When you are done developing for the day, use this to shut down your environment and free up your computer's RAM and CPU:
-bash
-docker compose down
-Use code with caution.
+### OPcache Profile (`docker/php/opcache.ini`)
+```ini
+[opcache]
+opcache.enable=1
+opcache.enable_cli=1
+opcache.memory_consumption=256
+opcache.interned_strings_buffer=16
+opcache.max_accelerated_files=20000
+opcache.revalidate_freq=0
+opcache.validate_timestamps=1
+```
 
-🔄 Step 5: The "Nuclear Option" (Full Reset)
+### Docker Compose Orchestrator (`docker-compose.yml`)
+```yaml
+name: mvc-php-app
 
-If your container configuration gets corrupted or you change configurations in your Dockerfile or vhost.conf, run this chain to clear out old build caches and rebuild the environment from a completely blank slate:
-bash
-docker compose down --volumes && docker compose up -d --build && docker compose exec app composer install
-Use code with caution.
-• Warning: The --volumes flag wipes out your local MySQL container database tables so that your schema boots freshly on the next start.
-Now that your containers are running seamlessly, what does your browser show when you go to http://localhost:8080? Is it displaying your custom framework landing page, or are you getting a 404 Not Found / 500 Server Error from Apache?
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    ports:
+      - "${APP_PORT:-8080}:80"
+    volumes:
+      - .:/var/www/html
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: ${DB_DATABASE:-mvc_app}
+      DB_USERNAME: ${DB_USERNAME:-root}
+      DB_PASSWORD: ${DB_ROOT_PASSWORD:-secret}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: mysql:8.4
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-secret}
+      MYSQL_DATABASE: ${DB_DATABASE:-mvc_app}
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 5s
+      retries: 5
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: mvc_phpmyadmin
+    restart: always
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+    depends_on:
+      db:
+        condition: service_healthy
+```
+
+---
+
+## 🛠️ 4. Explicit Development Operations Playbook (Git Bash / Command Prompt)
+
+Use this step-by-step checklist to initialize or completely reconstruct your workspace locally:
+
+* Initialize Infrastructure (Cold Boot)
+  ```bash
+  docker compose up -d
+  ```
+* Synchronize Active Dependencies
+  ```bash
+  docker compose exec app composer install
+  ```
+* Optimize PSR-4 Map Storage Tables
+  ```bash
+  docker compose exec app composer dump-autoload -o
+  ```
+* Execute System Database Migrations
+  ```bash
+  docker compose exec app php database/migrate.php
+  ```
+* Graceful Environment Shutdown
+  ```bash
+  docker compose down
+  ```
+* The "Nuclear" Deployment Reconstruction Reset
+  ```bash
+  docker compose down --volumes && docker compose up -d --build && docker compose exec app composer install
+  ```
+
+---
+
+## 🌐 5. Unified Local Endpoint Mapping Table
+
+| External Endpoint URL | Targeted Service Pathway | Operational Purpose |
+| :--- | :--- | :--- |
+| `http://localhost:8080/` | `app/Frontend/` via Apache | Serves the main client website storefront. |
+| `http://localhost:8081/` | `phpmyadmin` container | Accessible GUI for editing and seeding database rows. |
+| `127.0.0.1:3307` | `db` container port mapping | Interface for linking external desktop clients (TablePlus/DBeaver). |
