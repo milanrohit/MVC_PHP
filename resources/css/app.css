@@ -1,0 +1,5 @@
+@import "tailwindcss";
+
+/* Scan PHP views for class names (Tailwind v4 auto-detects, this makes it explicit) */
+@source "../../app/Views";
+@source "../js";

@@ -1,0 +1,11 @@
+{
+    "name": "ecommerce/my-mvc-project",
+    "description": "Lightweight custom PHP MVC framework (zero runtime dependencies)",
+    "type": "project",
+    "require": { "php": ">=8.2", "ext-pdo": "*" },
+    "autoload": {
+        "psr-4": { "App\\": "app/", "Core\\": "core/" },
+        "files": ["core/helpers.php"]
+    },
+    "config": { "optimize-autoloader": true, "sort-packages": true }
+}

@@ -1,0 +1,100 @@
+my-mvc-project/
+├── app/
+│   ├── Controllers/        HomeController.php
+│   ├── Models/             User.php
+│   ├── Repositories/       UserRepository.php (+ Contracts/)
+│   ├── Services/           UserService.php
+│   ├── Middleware/         CsrfMiddleware.php, SecurityHeaders.php
+│   └── Views/
+│       ├── layouts/        main.php
+│       └── home/           index.php
+├── core/
+│   ├── Application.php     bootstrap + container
+│   ├── Container.php       tiny DI
+│   ├── Router.php          base-path agnostic
+│   ├── Request.php / Response.php
+│   ├── Controller.php      base controller (CSRF, render, json)
+│   ├── Database.php        PDO singleton + factory
+│   ├── Config.php / Env.php
+│   ├── Session.php / Csrf.php
+│   ├── View.php
+│   ├── ExceptionHandler.php
+│   ├── Migrator.php
+│   └── helpers.php         e(), url(), asset(), csrf_field()
+├── config/                 app.php, database.php
+├── routes/                 web.php
+├── database/migrations/    001_create_users.sql
+├── resources/
+│   ├── css/app.css         @import "tailwindcss";
+│   └── js/
+│       ├── app.js          bootstrap: jQuery + Vue bridge
+│       ├── bridge.js       window.$ / mountIslands()
+│       └── components/     Counter.vue
+├── public/
+│   ├── index.php           front controller
+│   ├── .htaccess
+│   └── build/              compiled assets (committed)
+├── storage/logs/           .gitkeep
+├── docker/
+│   ├── php/Dockerfile      php:8.4-apache
+│   └── apache/vhost.conf
+├── .github/workflows/ci.yml
+├── .htaccess               XAMPP root redirect into /public
+├── docker-compose.yml      app + db (+ optional phpMyAdmin)
+├── .env.example
+├── .gitignore / .dockerignore
+├── composer.json           PSR-4 only, zero runtime deps
+├── package.json / vite.config.js
+└── README.md               run steps for both environments
+
+
+
+
+
+
+NOTE: TO Establish of this mvc:
+Now that your core Docker image is built and your custom framework dependencies are installed, you need a clean, repeatable checklist to spin up, manage, or reset your project from scratch anytime.
+Since you mentioned you are setting things up from scratch, here is your Complete Step-by-Step Command Playbook for your daily development workflow in Git Bash.
+
+🚀 Step 1: Start Your Project From Scratch
+
+Run this sequence anytime you boot up your computer or open your project directory for the first time to bring your database and web server online:
+bash
+docker compose up -d
+Use code with caution.
+• Verify it works: Open your browser and navigate to http://localhost:8080.
+
+📦 Step 2: Sync and Install Dependencies
+
+If you add new packages to your custom framework or pull changes from Git, run this to keep your container packages synchronized:
+bash
+docker compose exec app composer install
+Use code with caution.
+
+💾 Step 3: Database & Migration Management
+
+Because your framework uses custom routing and a MySQL container, you need commands to verify your database connection or seed schemas:
+• Enter your MySQL Database CLI directly:bash
+docker compose exec db mysql -u root -p
+Use code with caution.
+(It will ask for your password; type secret or your designated .env string).
+• Run a custom PHP database migration script (if your framework has one):bash
+docker compose exec app php bin/migrate.php
+Use code with caution.
+(Replace bin/migrate.php with the actual path to your framework's custom CLI entry point).
+
+🛑 Step 4: Stop Your Project Cleanly
+
+When you are done developing for the day, use this to shut down your environment and free up your computer's RAM and CPU:
+bash
+docker compose down
+Use code with caution.
+
+🔄 Step 5: The "Nuclear Option" (Full Reset)
+
+If your container configuration gets corrupted or you change configurations in your Dockerfile or vhost.conf, run this chain to clear out old build caches and rebuild the environment from a completely blank slate:
+bash
+docker compose down --volumes && docker compose up -d --build && docker compose exec app composer install
+Use code with caution.
+• Warning: The --volumes flag wipes out your local MySQL container database tables so that your schema boots freshly on the next start.
+Now that your containers are running seamlessly, what does your browser show when you go to http://localhost:8080? Is it displaying your custom framework landing page, or are you getting a 404 Not Found / 500 Server Error from Apache?
