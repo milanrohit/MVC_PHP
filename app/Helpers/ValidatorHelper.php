@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace app\Support;
+namespace App\Helpers;
 
 use InvalidArgumentException;
 use app\Helpers\ArrayHelper as ArrayHelper;

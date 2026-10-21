@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace app\Support;
+namespace App\Helpers;
 
 /**
  * SOLID Design: Single Responsibility Principle (SRP) for compiling core framework configuration and immutable tokens.

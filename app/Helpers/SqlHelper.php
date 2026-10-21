@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace app\Support;
+namespace App\Helpers;
 
 use PDO;
 use PDOStatement;
