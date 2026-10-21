@@ -3,12 +3,18 @@ declare(strict_types=1);
 
 namespace Core;
 
-/** Base controller: rendering + JSON helpers. CSRF is enforced by CsrfMiddleware. */
 abstract class Controller
 {
+    /** App\Frontend\Controllers\X -> app/Frontend/Views, App\Backend\... -> app/Backend/Views */
+    protected function viewRoot(): string
+    {
+        $area = explode('\\', static::class)[1] ?? '';
+        return BASE_PATH . '/app/' . $area . '/Views';
+    }
+
     protected function render(string $view, array $data = [], string $layout = 'layouts/main'): Response
     {
-        return Response::html(View::render($view, $data, $layout));
+        return Response::html(View::render($view, $data, $layout, $this->viewRoot()));
     }
 
     protected function json(mixed $data, int $status = 200): Response
