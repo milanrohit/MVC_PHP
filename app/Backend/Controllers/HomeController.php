@@ -17,7 +17,7 @@ final class HomeController extends Controller
 
     public function index(Request $request): Response
     {
-        return $this->render('backend/home/index', ['title' => 'Home']);
+        return $this->render('home/index', ['title' => 'Dashboard']);
     }
 
     public function users(Request $request): Response

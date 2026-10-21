@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-use Core\Router;
-use App\Frontend\Controllers\HomeController as FrontendHome;
 use App\Backend\Controllers\HomeController as BackendHome;
+use App\Frontend\Controllers\HomeController as FrontendHome;
+use Core\Router;
 
 /** @var Router $router */
 
@@ -12,12 +12,13 @@ use App\Backend\Controllers\HomeController as BackendHome;
 // ----------------------------------------------------
 $router->get('/', [FrontendHome::class, 'index']);
 
+// ----------------------------------------------------
+// 2. API ROUTES (used by the jQuery users demo on the home page)
+// ----------------------------------------------------
+$router->get('/api/users', [FrontendHome::class, 'users']);
+$router->post('/api/users', [FrontendHome::class, 'store']);
 
 // ----------------------------------------------------
-// 2. API / BACKEND DATA ROUTES
+// 3. BACKEND (ADMIN) ROUTES
 // ----------------------------------------------------
-$router->get('/api/users', [BackendHome::class, 'users']);
-$router->post('/api/users', [BackendHome::class, 'store']);
-
-// Optional: Add an explicit route to access the new backend panel index
 $router->get('/admin', [BackendHome::class, 'index']);
