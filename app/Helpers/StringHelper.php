@@ -95,7 +95,7 @@ final class StringHelper
         $string = preg_replace('/[^a-zA-Z0-9\s]/', '', $string);
         
         // Lowercase and swap spaces for separators
-        return lowercase(preg_replace('/\s+/', $separator, trim(mb_strtolower($string, 'UTF-8'))));
+        return preg_replace('/\s+/', $separator, trim(mb_strtolower($string, 'UTF-8')));
     }
 
     /**
