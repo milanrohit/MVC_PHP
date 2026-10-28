@@ -26,97 +26,147 @@ try {
 
     SqlHelper::setConnection($pdo);
 
-    // Disable foreign key checks temporarily to handle clean truncation
-    $pdo->exec("SET FOREIGN_KEY_CHECKS = 0;");
+    static $set_frk_chk = 'SET FOREIGN_KEY_CHECKS';
 
-    echo "🚀 Starting precise bulk database seeding (50-500 records)...\n\n";
+    // Disable foreign key checks temporarily to handle clean truncation safely
+    $pdo->exec($set_frk_chk .'= 0;');
 
+    echo "🚀 Starting precise bulk database seeding (50-500 records)..." . PHP_EOL;
+
+    // Start a single database transaction to process queries at lightning speed
+    $pdo->beginTransaction();
+
+    $outputMessages = [];
+
+    // ==========================================
     // 1. Seed Categories (category_master)
+    // ==========================================
     $pdo->exec("TRUNCATE TABLE category_master;");
     $categories = ['Electronics', 'Clothing', 'Home & Kitchen', 'Books', 'Sports', 'Toys', 'Beauty', 'Automotive', 'Health', 'Grocery'];
     $catStmt = $pdo->prepare("INSERT INTO category_master (category_master_name, category_master_slug, category_master_is_active, category_master_is_deleted) VALUES (?, ?, 'Y', 'N')");
     
     foreach ($categories as $index => $catName) {
-        $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $catName))) . '-' . ($index + 1);
+        $slug = strtolower(trim((string) preg_replace('/[^A-Za-z0-9-]+/', '-', $catName))) . '-' . ($index + 1);
         $catStmt->execute([$catName, $slug]);
     }
-    echo "✔ Inserted " . count($categories) . " categories into category_master[cite: 8].\n";
+    $outputMessages[] = "Inserted " . count($categories) . " categories into category_master.";
 
-    // 2. Seed Users (user_master) - 50 Records
+    // ==========================================
+    // 2. Seed Users (user_master) - Bulk Inserted
+    // ==========================================
     $pdo->exec("TRUNCATE TABLE user_master;");
-    $userStmt = $pdo->prepare("INSERT INTO user_master (user_master_name, user_master_email, user_master_password, user_master_role, user_master_is_active, user_master_is_verified, user_master_is_deleted) VALUES (?, ?, ?, 'customer', 'Y', 'Y', 'N')");
     
+    // CRITICAL SPEED FIX: Pre-hash the password ONCE outside the loop to avoid CPU throttling
+    $sharedPasswordHash = password_hash('password123', PASSWORD_BCRYPT);
+    
+    $userRows = [];
+    $userSqlParams = [];
     for ($i = 1; $i <= 50; $i++) {
-        $userStmt->execute([
-            "Customer User {$i}",
-            "customer{$i}@example.com",
-            password_hash('password123', PASSWORD_BCRYPT)
-        ]);
+        $userRows[] = "(?, ?, ?, 'customer', 'Y', 'Y', 'N')";
+        $userSqlParams[] = "Customer User {$i}";
+        $userSqlParams[] = "customer{$i}@example.com";
+        $userSqlParams[] = $sharedPasswordHash;
     }
-    echo "✔ Inserted 50 users into user_master[cite: 7].\n";
+    $pdo->prepare("INSERT INTO user_master (user_master_name, user_master_email, user_master_password, user_master_role, user_master_is_active, user_master_is_verified, user_master_is_deleted) VALUES " . implode(',', $userRows))
+        ->execute($userSqlParams);
+        
+    $outputMessages[] = "Inserted 50 users into user_master.";
 
-    // 3. Seed Products (product_master) - 100 Records
+    // ==========================================
+    // 3. Seed Products (product_master) - Bulk Inserted
+    // ==========================================
     $pdo->exec("TRUNCATE TABLE product_master;");
-    $prodStmt = $pdo->prepare("INSERT INTO product_master (product_master_category_id, product_master_name, product_master_slug, product_master_description, product_master_price, product_master_stock, product_master_is_active, product_master_is_featured, product_master_is_deleted) VALUES (?, ?, ?, ?, ?, ?, 'Y', ?, 'N')");
     
+    $productRows = [];
+    $productSqlParams = [];
     for ($i = 1; $i <= 100; $i++) {
-        $catId = rand(1, count($categories));
+        $catId = random_int(1, count($categories));
         $prodName = "Product Item Model {$i}";
-        $slug = "product-item-model-{$i}-" . uniqid();
+        $slug = "product-item-model-{$i}-" . uniqid('', false);
         $desc = "This is a detailed description for product item model {$i}.";
-        $price = rand(49900, 250000); // Minor units (e.g., 49900 = 499.00)[cite: 9]
-        $stock = rand(10, 200);
-        $isFeatured = ($i <= 10) ? 'Y' : 'N'; // First 10 featured on home page[cite: 9]
+        $price = random_int(49900, 250000); // Minor units format (e.g. 49900 = $499.00)
+        $stock = random_int(10, 200);
+        $isFeatured = ($i <= 10) ? 'Y' : 'N';
 
-        $prodStmt->execute([$catId, $prodName, $slug, $desc, $price, $stock, $isFeatured]);
+        $productRows[] = "(?, ?, ?, ?, ?, ?, 'Y', ?, 'N')";
+        array_push($productSqlParams, $catId, $prodName, $slug, $desc, $price, $stock, $isFeatured);
     }
-    echo "✔ Inserted 100 products into product_master[cite: 9].\n";
+    $pdo->prepare("INSERT INTO product_master (product_master_category_id, product_master_name, product_master_slug, product_master_description, product_master_price, product_master_stock, product_master_is_active, product_master_is_featured, product_master_is_deleted) VALUES " . implode(',', $productRows))
+        ->execute($productSqlParams);
 
-    // 4. Seed Orders (order_master) - 200 Records
+    $outputMessages[] = "Inserted 100 products into product_master.";
+
+    // ==========================================
+    // 4. Seed Orders (order_master) & Details (order_detail)
+    // ==========================================
     $pdo->exec("TRUNCATE TABLE order_detail;");
     $pdo->exec("TRUNCATE TABLE order_master;");
     
     $statuses = ['pending', 'paid', 'shipped', 'delivered', 'cancelled'];
-    $orderStmt = $pdo->prepare("INSERT INTO order_master (order_master_user_id, order_master_total, order_master_status) VALUES (?, ?, ?)");
     
-    for ($i = 1; $i <= 200; $i++) {
-        $userId = rand(1, 50); // Links to user_master_id 1-50[cite: 7, 10]
-        $status = $statuses[array_rand($statuses)];
-        $orderStmt->execute([$userId, 0, $status]); // Total will be updated in next loop[cite: 10]
-    }
-    echo "✔ Inserted 200 order headers into order_master[cite: 10].\n";
-
-    // 5. Seed Order Details (order_detail) - ~400 Line Items with calculated totals
-    $detailStmt = $pdo->prepare("INSERT INTO order_detail (order_detail_order_id, order_detail_product_id, order_detail_quantity, order_detail_price) VALUES (?, ?, ?, ?)");
+    $orderMasterStmt = $pdo->prepare("INSERT INTO order_master (order_master_user_id, order_master_total, order_master_status) VALUES (?, ?, ?)");
+    $orderDetailStmt = $pdo->prepare("INSERT INTO order_detail (order_detail_order_id, order_detail_product_id, order_detail_quantity, order_detail_price) VALUES (?, ?, ?, ?)");
     $updateTotalStmt = $pdo->prepare("UPDATE order_master SET order_master_total = ? WHERE order_master_id = ?");
 
     for ($orderId = 1; $orderId <= 200; $orderId++) {
-        $itemsInOrder = rand(1, 4); 
+        // FIX: Connect only to seeded user IDs (1 to 50)
+        $userId = random_int(1, 50);
+        $status = $statuses[array_rand($statuses)];
+        
+        // Insert Header
+        $orderMasterStmt->execute([$userId, 0, $status]);
+
+        $itemsInOrder = random_int(1, 4);
         $orderTotal = 0;
 
         for ($item = 0; $item < $itemsInOrder; $item++) {
-            $productId = rand(1, 100);
-            $qty = rand(1, 3);
-            $unitPrice = rand(999, 15000); // Minor units price snapshot[cite: 11]
+            // FIX: Connect only to valid product IDs (1 to 100)
+            $productId = random_int(1, 100);
+            $qty = random_int(1, 10);
+            $unitPrice = random_int(999, 15000);
             
-            $detailStmt->execute([$orderId, $productId, $qty, $unitPrice]);
+            $orderDetailStmt->execute([$orderId, $productId, $qty, $unitPrice]);
             $orderTotal += ($qty * $unitPrice);
         }
 
-        // Update the order master header total price
+        // Update Header Total
         $updateTotalStmt->execute([$orderTotal, $orderId]);
     }
-    echo "✔ Inserted order details and calculated header totals successfully[cite: 10, 11].\n";
+    
+    $outputMessages[] = "Inserted 200 order headers into order_master.";
+    $outputMessages[] = "Inserted order details and calculated header totals successfully.";
+
+    // Save all actions permanently to the database engine
+    $pdo->commit();
 
     // Re-enable foreign key constraints
-    $pdo->exec("SET FOREIGN_KEY_CHECKS = 1;");
+    $pdo->exec($set_frk_chk .'= 1;');
 
-    echo "\n\033[1;32m🎉 Success! All framework database tables are seeded precisely using schema column mappings.\033[0m\n";
+    // ==========================================
+    // Visual Output Display Layout
+    // ==========================================
+    echo PHP_EOL . "\033[1;36m┌────────────────────────────────────────────────────────┐\033[0m" . PHP_EOL;
+    echo "\033[1;36m│ \033[1;32m✔\033[0m \033[1;37mSEED DATA COMPLETED SUCCESSFULLY                      \033[1;36m│\033[0m" . PHP_EOL;
+    echo "\033[1;36m└────────────────────────────────────────────────────────┘\033[0m" . PHP_EOL;
+
+    foreach ($outputMessages as $message) {
+        echo "  \033[32m✔\033[0m \033[37m{$message}\033[0m" . PHP_EOL;
+    }
+
+    echo PHP_EOL . "\033[42m\033[30m SUCCESS \033[0m All database tables are seeded precisely using schema column mappings." . PHP_EOL . PHP_EOL;
 
 } catch (\PDOException $e) {
-    echo "\033[1;31mDocker DB Connection/Query Failure: " . $e->getMessage() . "\033[0m\n";
+    if (isset($pdo) && $pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
+    $pdo->exec($set_frk_chk .'= 1;');
+    echo PHP_EOL . "\033[41m\033[37m ERROR \033[0m Docker DB Connection/Query Failure: " . $e->getMessage() . PHP_EOL . PHP_EOL;
     exit(1);
 } catch (\Throwable $e) {
-    echo "\033[1;31mFatal Processing Error: " . $e->getMessage() . "\033[0m\n";
+    if (isset($pdo) && $pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
+    $pdo->exec($set_frk_chk .'= 1;');
+    echo PHP_EOL . "\033[41m\033[37m ERROR \033[0m Fatal Processing Error: " . $e->getMessage() . PHP_EOL . PHP_EOL;
     exit(1);
 }

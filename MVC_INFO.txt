@@ -246,3 +246,5 @@ Use this step-by-step checklist to initialize or completely reconstruct your wor
 | `http://localhost:8080/` | `app/Frontend/` via Apache | Serves the main client website storefront. |
 | `http://localhost:8081/` | `phpmyadmin` container | Accessible GUI for editing and seeding database rows. |
 | `127.0.0.1:3307` | `db` container port mapping | Interface for linking external desktop clients (TablePlus/DBeaver). |
+
+
