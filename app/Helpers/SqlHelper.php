@@ -21,7 +21,9 @@ final class SqlHelper
     /**
      * Instantiation is blocked to enforce an optimized, unified static interface.
      */
-    private function __construct() {}
+    private function __construct()
+    {
+    }
 
     /**
      * 1. Initialize the helper with a shared PDO instance.
@@ -31,7 +33,7 @@ final class SqlHelper
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
         $pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
-        
+
         self::$pdo = $pdo;
     }
 
@@ -97,7 +99,7 @@ final class SqlHelper
     {
         $stmt = self::getPdo()->prepare($sql); // Do not cache streaming queries to allow execution recycling
         $stmt->execute($params);
-        
+
         while ($row = $stmt->fetch()) {
             yield $row;
         }
@@ -164,10 +166,10 @@ final class SqlHelper
     public static function delete(string $table, string $where, array $whereParams = []): int
     {
         $sql = sprintf("DELETE FROM %s WHERE %s", $table, $where);
-        
+
         $stmt = self::getPreparedStatement($sql);
         $stmt->execute($whereParams);
-        
+
         return $stmt->rowCount();
     }
 

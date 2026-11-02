@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Core;
@@ -7,7 +8,9 @@ use PDO;
 
 final class Migrator
 {
-    public function __construct(private readonly PDO $pdo, private readonly string $dir) {}
+    public function __construct(private readonly PDO $pdo, private readonly string $dir)
+    {
+    }
 
     /** @return string[] names of migrations that were run */
     public function run(): array

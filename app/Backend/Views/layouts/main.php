@@ -1,4 +1,6 @@
-<?php /** @var string $content */ /** @var string|null $title */ ?>
+<?php
+
+/** @var string $content */ /** @var string|null $title */ ?>
 <!doctype html>
 <html lang="en">
 <head>

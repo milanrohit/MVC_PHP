@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Core;
@@ -9,12 +10,26 @@ final class Router
     /** @var class-string<MiddlewareInterface>[] */
     private array $middleware = [];
 
-    public function __construct(private readonly Container $container) {}
+    public function __construct(private readonly Container $container)
+    {
+    }
 
-    public function get(string $path, array|callable $handler): void    { $this->add('GET', $path, $handler); }
-    public function post(string $path, array|callable $handler): void   { $this->add('POST', $path, $handler); }
-    public function put(string $path, array|callable $handler): void    { $this->add('PUT', $path, $handler); }
-    public function delete(string $path, array|callable $handler): void { $this->add('DELETE', $path, $handler); }
+    public function get(string $path, array|callable $handler): void
+    {
+        $this->add('GET', $path, $handler);
+    }
+    public function post(string $path, array|callable $handler): void
+    {
+        $this->add('POST', $path, $handler);
+    }
+    public function put(string $path, array|callable $handler): void
+    {
+        $this->add('PUT', $path, $handler);
+    }
+    public function delete(string $path, array|callable $handler): void
+    {
+        $this->add('DELETE', $path, $handler);
+    }
 
     public function middleware(string $class): void
     {

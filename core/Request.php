@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Core;
@@ -12,7 +13,8 @@ final class Request
         private readonly array $query,
         private readonly array $post,
         private readonly string $rawBody = ''
-    ) {}
+    ) {
+    }
 
     public static function capture(): self
     {

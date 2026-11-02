@@ -1,4 +1,5 @@
 <?php
+
 // Usage: php database/migrate.php   (or: docker compose exec app php database/migrate.php)
 declare(strict_types=1);
 
@@ -47,7 +48,7 @@ function runDatabaseMigrations(): void
             try {
                 // Database identifiers cannot be bound as SQL parameters; $dbName passed strict allowlist validation above.
                 $pdoInit->exec("CREATE DATABASE {$quotedDbName} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"); // NOSONAR
-                
+
                 // Beautiful Database Creation Badge
                 echo PHP_EOL . "\033[42m\033[30m SUCCESS \033[0m Database \033[1;33m'{$sanitizedDbName}'\033[0m was created successfully." . PHP_EOL;
             } catch (PDOException $e) {
@@ -72,14 +73,13 @@ function runDatabaseMigrations(): void
                 'dbname'     => $sanitizedDbName,
                 'table_name' => 'migrations'
             ]);
-            
+
             // PHP 8.5+ Strict type verification on column fetch
             if ($tableCheck->fetchColumn() !== false) {
                 echo PHP_EOL . "\033[43m\033[30m WARNING \033[0m DATABASE STRUCTURE ALREADY EXISTS. INITIAL MIGRATIONS CANNOT BE RE-RUN." . PHP_EOL . PHP_EOL;
                 exit(0);
             }
         }
-
     } catch (PDOException $e) {
         echo PHP_EOL . "\033[41m\033[37m ERROR \033[0m Database Initialization Error: " . $e->getMessage() . PHP_EOL;
         exit(1);

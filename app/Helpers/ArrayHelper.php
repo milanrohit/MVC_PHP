@@ -13,7 +13,9 @@ final class ArrayHelper
     /**
      * Instantiation is blocked to enforce pure utility architecture.
      */
-    private function __construct() {}
+    private function __construct()
+    {
+    }
 
     /**
      * 1. Retrieve a nested value from an array using dot-notation.
@@ -59,7 +61,7 @@ final class ArrayHelper
     public static function set(array &$array, string $key, mixed $value): array
     {
         $keys = explode('.', $key);
-        
+
         while (count($keys) > 1) {
             $key = array_shift($keys);
             if (!isset($array[$key]) || !is_array($array[$key])) {

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Core;
@@ -12,7 +13,9 @@ final class Database
 {
     private static ?PDO $instance = null;
 
-    private function __construct() {}
+    private function __construct()
+    {
+    }
 
     public static function connection(): PDO
     {
@@ -28,7 +31,11 @@ final class Database
 
         $dsn = sprintf(
             '%s:host=%s;port=%d;dbname=%s;charset=%s',
-            $driver, $c['host'], $port, $c['database'], $charset
+            $driver,
+            $c['host'],
+            $port,
+            $c['database'],
+            $charset
         );
 
         try {
@@ -42,7 +49,11 @@ final class Database
             // Show WHERE it tried to connect (never the password) so config mistakes are obvious.
             throw new RuntimeException(sprintf(
                 'Database connection failed (%s@%s:%d/%s): %s',
-                $c['username'], $c['host'], $port, $c['database'], $e->getMessage()
+                $c['username'],
+                $c['host'],
+                $port,
+                $c['database'],
+                $e->getMessage()
             ), 0, $e);
         }
     }

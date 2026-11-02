@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Services;
@@ -9,7 +10,9 @@ use InvalidArgumentException;
 
 final class UserService
 {
-    public function __construct(private readonly UserRepositoryInterface $users) {}
+    public function __construct(private readonly UserRepositoryInterface $users)
+    {
+    }
 
     /** @return User[] */
     public function list(): array

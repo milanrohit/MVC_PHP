@@ -16,7 +16,9 @@ final class ValidatorHelper
     /**
      * Instantiation is blocked to enforce an optimized, unified static interface.
      */
-    private function __construct() {}
+    private function __construct()
+    {
+    }
 
     /**
      * 1. Validate data against an array of rules.
@@ -210,7 +212,7 @@ final class ValidatorHelper
         if ($value === null || $value === '') {
             return true;
         }
-        return is_string($value) && json_validate($value); // PHP 8.3/8.4 Optimized native syntax 
+        return is_string($value) && json_validate($value); // PHP 8.3/8.4 Optimized native syntax
     }
 
     /**
@@ -230,7 +232,7 @@ final class ValidatorHelper
     private static function getErrorMessage(string $field, string $rule, array $parameters): string
     {
         $cleanField = ucwords(str_replace(['_', '-'], ' ', $field));
-        
+
         return match ($rule) {
             'required'      => "The {$cleanField} field is strictly required.",
             'email'         => "The {$cleanField} must be a valid email registration address.",

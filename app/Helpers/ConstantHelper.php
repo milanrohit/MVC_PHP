@@ -13,7 +13,9 @@ final class ConstantHelper
     /**
      * Instantiation is blocked to enforce a strict, immutable dictionary catalog.
      */
-    private function __construct() {}
+    private function __construct()
+    {
+    }
 
     // =========================================================================
     // 1. APPLICATION META & SPECS

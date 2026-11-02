@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Core;
@@ -7,7 +8,9 @@ use Throwable;
 
 final class ExceptionHandler
 {
-    public function __construct(private readonly bool $debug, private readonly string $logDir) {}
+    public function __construct(private readonly bool $debug, private readonly string $logDir)
+    {
+    }
 
     public function register(): void
     {

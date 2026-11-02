@@ -1,4 +1,5 @@
 <?php
+
 return [
     'name'      => Core\Env::get('APP_NAME', 'MVC_PHP_ECOMMERCE'),
     'env'       => Core\Env::get('APP_ENV', 'local'),

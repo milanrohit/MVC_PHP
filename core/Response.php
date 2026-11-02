@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Core;
@@ -9,7 +10,8 @@ final class Response
         private string $body = '',
         private int $status = 200,
         private array $headers = []
-    ) {}
+    ) {
+    }
 
     public static function html(string $html, int $status = 200): self
     {

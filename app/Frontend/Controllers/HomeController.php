@@ -1,7 +1,10 @@
 <?php
+
 declare(strict_types=1);
 
-namespace App\Frontend\Controllers; // 👈 Updated namespace to match folder path
+namespace App\Frontend\Controllers;
+
+// 👈 Updated namespace to match folder path
 
 
 use App\Models\User;
@@ -13,7 +16,9 @@ use InvalidArgumentException;
 
 final class HomeController extends Controller
 {
-    public function __construct(private readonly UserService $users) {}
+    public function __construct(private readonly UserService $users)
+    {
+    }
 
     public function index(Request $request): Response
     {

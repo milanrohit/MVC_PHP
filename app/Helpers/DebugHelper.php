@@ -21,7 +21,9 @@ final class DebugHelper
     /**
      * Instantiation blocked to enforce functional utility architecture.
      */
-    private function __construct() {}
+    private function __construct()
+    {
+    }
 
     /**
      * 1. Dump variables beautifully with clean typography and continue execution.
@@ -128,7 +130,7 @@ final class DebugHelper
     public static function inspectObject(object $object): array
     {
         $reflector = new ReflectionClass($object);
-        
+
         return [
             'class_name' => $reflector->getName(),
             'properties' => array_map(fn($prop) => $prop->getName(), $reflector->getProperties()),
@@ -142,7 +144,7 @@ final class DebugHelper
     public static function log(mixed $message, string $level = 'DEBUG'): void
     {
         $logFile = dirname(__DIR__, 2) . '/storage/logs/debug.log';
-        
+
         if (!is_dir(dirname($logFile))) {
             mkdir(dirname($logFile), 0755, true);
         }

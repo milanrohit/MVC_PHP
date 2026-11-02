@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Models;
@@ -10,7 +11,8 @@ final class User
         public readonly string $name,
         public readonly string $email,
         public readonly ?string $createdAt = null
-    ) {}
+    ) {
+    }
 
     public static function fromRow(array $row): self
     {

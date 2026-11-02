@@ -13,7 +13,9 @@ final class StringHelper
     /**
      * Instantiation is blocked to enforce pure utility architecture.
      */
-    private function __construct() {}
+    private function __construct()
+    {
+    }
 
     /**
      * 1. Check if a string contains a specific substring.
@@ -90,10 +92,10 @@ final class StringHelper
     {
         // Transliterate non-ascii characters to ascii equivalents
         $string = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $string);
-        
+
         // Remove everything except alphanumeric symbols and spaces
         $string = preg_replace('/[^a-zA-Z0-9\s]/', '', $string);
-        
+
         // Lowercase and swap spaces for separators
         return preg_replace('/\s+/', $separator, trim(mb_strtolower($string, 'UTF-8')));
     }
