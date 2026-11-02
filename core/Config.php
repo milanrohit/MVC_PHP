@@ -11,7 +11,7 @@ final class Config
     public static function load(string $dir): void
     {
         foreach (glob(rtrim($dir, '/') . '/*.php') ?: [] as $file) {
-            self::$items[basename($file, '.php')] = require $file;
+            self::$items[basename($file, '.php')] = require_once $file;
         }
     }
 

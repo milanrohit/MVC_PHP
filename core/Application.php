@@ -48,7 +48,7 @@ final class Application
             $router = new Router($this->container);
             $router->middleware(SecurityHeaders::class);
             $router->middleware(CsrfMiddleware::class);
-            require $this->basePath . '/routes/web.php';
+            require_once $this->basePath . '/routes/web.php';
 
             $router->dispatch($request)->send();
         } catch (Throwable $e) {

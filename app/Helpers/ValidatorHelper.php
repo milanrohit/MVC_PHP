@@ -47,7 +47,11 @@ final class ValidatorHelper
                 }
 
                 // Execute rule check dynamically with an early-exit optimization strategy
-                if (!self::$methodName($value, $parameters, $data)) {
+                $isValid = $rule === 'required'
+                    ? self::validateRequired($value)
+                    : self::$methodName($value, $parameters, $data);
+
+                if (!$isValid) {
                     $errors[$field][] = self::getErrorMessage($field, $rule, $parameters);
                 }
             }
@@ -59,18 +63,16 @@ final class ValidatorHelper
     /**
      * 2. Rule: Check if a value is present and not empty.
      */
-    private static function validateRequired(mixed $value, array $parameters, array $data): bool
+    private static function validateRequired(mixed $value): bool
     {
-        if ($value === null) {
-            return false;
+        switch (true) {
+            case $value === null:
+            case is_string($value) && trim($value) === '':
+            case is_array($value) && count($value) === 0:
+                return false;
+            default:
+                return true;
         }
-        if (is_string($value) && trim($value) === '') {
-            return false;
-        }
-        if (is_array($value) && count($value) === 0) {
-            return false;
-        }
-        return true;
     }
 
     /**

@@ -191,7 +191,7 @@ final class ArrayHelper
      */
     public static function filterRecursive(array $array): array
     {
-        foreach ($array as $key => &$value) {
+        foreach ($array as &$value) {
             if (is_array($value)) {
                 $value = self::filterRecursive($value);
             }
