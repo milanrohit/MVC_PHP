@@ -42,7 +42,7 @@ final class StringHelper
     }
 
     /**
-     * 4. PHP 8.4 Optimized: Capitalize the first character of a string safely using multi-byte support.
+     * 4. PHP 8.5.12 Optimized: Capitalize the first character of a string safely using multi-byte support.
      */
     public static function ucfirst(string $string, string $encoding = 'UTF-8'): string
     {
@@ -50,7 +50,7 @@ final class StringHelper
     }
 
     /**
-     * 5. PHP 8.4 Optimized: Lowercase the first character of a string safely using multi-byte support.
+     * 5. PHP 8.5.12 Optimized: Lowercase the first character of a string safely using multi-byte support.
      */
     public static function lcfirst(string $string, string $encoding = 'UTF-8'): string
     {

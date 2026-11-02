@@ -16,7 +16,7 @@ docker compose exec app php database/migrate.php
 App: http://localhost:8080 · MySQL from host: 127.0.0.1:3307 · phpMyAdmin: http://localhost:8081
 (Host ports 8080/3307 are used on purpose so they never clash with XAMPP's 80/3306.)
 
-## Option B: XAMPP (PHP 8.4 + Apache + MySQL)
+## Option B: XAMPP (PHP 8.5.12 + Apache + MySQL)
 
 1. Put the folder in `htdocs/my-mvc-project`, enable `mod_rewrite` (default on).
 2. `cp .env.example .env` and set `DB_HOST=127.0.0.1`, `DB_USERNAME=root`, `DB_PASSWORD=` (blank by default).

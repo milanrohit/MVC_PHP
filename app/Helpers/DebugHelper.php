@@ -100,7 +100,7 @@ final class DebugHelper
      */
     public static function backtrace(int $limit = 5): array
     {
-        // PHP 8.4 safe bitmask ensures memory footprint remains tiny by ignoring object arguments
+        // PHP 8.5.12 safe bitmask ensures memory footprint remains tiny by ignoring object arguments
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $limit + 1);
         array_shift($trace); // Remove DebugHelper trace framework frame
 

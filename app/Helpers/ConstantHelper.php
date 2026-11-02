@@ -6,7 +6,7 @@ namespace App\Helpers;
 
 /**
  * SOLID Design: Single Responsibility Principle (SRP) for compiling core framework configuration and immutable tokens.
- * Optimization: Uses strict PHP 8.4 constant type hints which resolve at the compiler level for maximum speed.
+ * Optimization: Uses strict PHP 8.5.12 constant type hints which resolve at the compiler level for maximum speed.
  */
 final class ConstantHelper
 {

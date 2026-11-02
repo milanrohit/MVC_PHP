@@ -66,7 +66,7 @@ my-mvc-project/
 │   ├── apache/
 │   │   └── vhost.conf           # Strict Apache2 VirtualHost Module Controller
 │   └── php/
-│       ├── Dockerfile           # Optimized Base: PHP 8.4-Apache + OPcache + Multi-layer Caching
+│       ├── Dockerfile           # Optimized Base: PHP 8.5.12-Apache + OPcache + Multi-layer Caching
 │       └── opcache.ini          # Bytecode Performance Tuning Manifest
 ├── public/                      # Public Document Root (Only Public Facing Access Pathway)
 │   ├── .htaccess                # Apache Request Rewrite Rule Engine

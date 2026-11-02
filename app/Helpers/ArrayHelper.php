@@ -91,7 +91,7 @@ final class ArrayHelper
     }
 
     /**
-     * 6. PHP 8.4 Optimized: Find the FIRST value satisfying a custom callback.
+     * 6. PHP 8.5.12 Optimized: Find the FIRST value satisfying a custom callback.
      * Returns null if no match is found without exhausting memory allocations.
      */
     public static function find(array $array, callable $callback): mixed
@@ -100,7 +100,7 @@ final class ArrayHelper
     }
 
     /**
-     * 7. PHP 8.4 Optimized: Find the FIRST key satisfying a custom callback.
+     * 7. PHP 8.5.12 Optimized: Find the FIRST key satisfying a custom callback.
      */
     public static function findKey(array $array, callable $callback): mixed
     {
@@ -108,7 +108,7 @@ final class ArrayHelper
     }
 
     /**
-     * 8. PHP 8.4 Optimized: True if AT LEAST ONE element satisfies the callback.
+     * 8. PHP 8.5.12 Optimized: True if AT LEAST ONE element satisfies the callback.
      */
     public static function any(array $array, callable $callback): bool
     {
@@ -116,7 +116,7 @@ final class ArrayHelper
     }
 
     /**
-     * 9. PHP 8.4 Optimized: True ONLY IF ALL elements satisfy the callback.
+     * 9. PHP 8.5.12 Optimized: True ONLY IF ALL elements satisfy the callback.
      */
     public static function all(array $array, callable $callback): bool
     {
