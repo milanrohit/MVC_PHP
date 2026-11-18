@@ -52,9 +52,11 @@ final class DebugHelper
                 : htmlspecialchars($formatted, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . "\n";
         }
 
-        if (!$isCli) {
-            echo '</pre>';
+        if ($isCli) {
+            return;
         }
+
+        echo '</pre>';
     }
 
     /**
@@ -96,8 +98,8 @@ final class DebugHelper
 
         return [
             'timer_name' => $name,
-            'duration_ms' => sprintf('%.2f ms', ($endTime - $startData['time']) * 1000),
-            'memory_used_kb' => sprintf('%.2f KB', ($endMemory - $startData['memory']) / 1024),
+            'duration_ms' => \sprintf('%.2f ms', ($endTime - $startData['time']) * 1000),
+            'memory_used_kb' => \sprintf('%.2f KB', ($endMemory - $startData['memory']) / 1024),
         ];
     }
 
@@ -129,10 +131,10 @@ final class DebugHelper
     public static function getMemoryProfile(): array
     {
         return [
-            'current_allocated' => sprintf(self::MEMORY_FORMAT, memory_get_usage(false) / 1024 / 1024),
-            'current_real_os' => sprintf(self::MEMORY_FORMAT, memory_get_usage(true) / 1024 / 1024),
-            'peak_allocated' => sprintf(self::MEMORY_FORMAT, memory_get_peak_usage(false) / 1024 / 1024),
-            'peak_real_os' => sprintf(self::MEMORY_FORMAT, memory_get_peak_usage(true) / 1024 / 1024),
+            'current_allocated' => \sprintf(self::MEMORY_FORMAT, memory_get_usage(false) / 1024 / 1024),
+            'current_real_os' => \sprintf(self::MEMORY_FORMAT, memory_get_usage(true) / 1024 / 1024),
+            'peak_allocated' => \sprintf(self::MEMORY_FORMAT, memory_get_peak_usage(false) / 1024 / 1024),
+            'peak_real_os' => \sprintf(self::MEMORY_FORMAT, memory_get_peak_usage(true) / 1024 / 1024),
         ];
     }
 
@@ -158,21 +160,21 @@ final class DebugHelper
      */
     public static function log(mixed $message, string $level = 'DEBUG'): void
     {
-        $logFile = dirname(__DIR__, 2) . '/storage/logs/debug.log';
-        $logDir = dirname($logFile);
+        $logFile = \dirname(__DIR__, 2) . '/storage/logs/debug.log';
+        $logDir = \dirname($logFile);
 
         if (!is_dir($logDir)) {
             mkdir($logDir, 0755, true);
         }
 
-        if (is_scalar($message)) {
+        if (\is_scalar($message)) {
             $formattedMessage = (string) $message;
         } else {
             $formattedMessage = json_encode($message, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
                 ?: '[unserializable]';
         }
 
-        $entry = sprintf(
+        $entry = \sprintf(
             "[%s] [%s] %s (Location: %s)\n",
             date('Y-m-d H:i:s'),
             strtoupper($level),
@@ -195,7 +197,7 @@ final class DebugHelper
         $end = microtime(true);
         $elapsed = $end - $start;
 
-        return sprintf(
+        return \sprintf(
             'Executed %d times in %.4f seconds (Avg: %.6fs per run)',
             $iterations,
             $elapsed,
@@ -210,18 +212,18 @@ final class DebugHelper
      */
     public static function getRequestHeaders(): array
     {
-        if (function_exists('getallheaders')) {
+        if (\function_exists('getallheaders')) {
             return getallheaders();
         }
 
         $serverVars = filter_input_array(INPUT_SERVER, FILTER_UNSAFE_RAW);
-        if (!is_array($serverVars)) {
+        if (!\is_array($serverVars)) {
             return [];
         }
 
         $headers = [];
         foreach ($serverVars as $name => $value) {
-            if (!is_string($name) || !is_string($value) || !str_starts_with($name, 'HTTP_')) {
+            if (!\is_string($name) || !\is_string($value) || !str_starts_with($name, 'HTTP_')) {
                 continue;
             }
 
@@ -244,7 +246,7 @@ final class DebugHelper
 
     private static function formatVariable(mixed $value): string
     {
-        if (is_string($value)) {
+        if (\is_string($value)) {
             return $value;
         }
 

@@ -57,7 +57,6 @@ final class ConstantHelper
     public const string ROLE_USER = 'user';
     public const string ROLE_GUEST = 'guest';
 
-    /** @var list<string> */
     public const array SYSTEM_ROLES = [
         self::ROLE_ADMIN,
         self::ROLE_MANAGER,
@@ -112,7 +111,6 @@ final class ConstantHelper
     public const string MSG_ERR_VALIDATION = 'Data rules threshold checking failed validation.';
     public const string MSG_ERR_CRITICAL = 'Engine fault. Check system logs for full diagnostics tracking.';
 
-    /** @var array<int, string> */
     private const array HTTP_STATUS_TITLES = [
         self::HTTP_OK => 'OK',
         self::HTTP_CREATED => 'Created',
@@ -127,7 +125,6 @@ final class ConstantHelper
         self::HTTP_INTERNAL_SERVER_ERROR => 'Fatal Stack Breakdown Code',
     ];
 
-    /** @var array<string, string> */
     private const array FEEDBACK_MESSAGES = [
         'create' => self::MSG_SUCCESS_CREATE,
         'update' => self::MSG_SUCCESS_UPDATE,

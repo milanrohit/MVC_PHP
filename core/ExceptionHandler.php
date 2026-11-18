@@ -70,7 +70,7 @@ final class ExceptionHandler
 
     private function log(Throwable $e): void
     {
-        $line = sprintf(
+        $line = \sprintf(
             "[%s] %s: %s in %s:%d\n",
             date('c'),
             $e::class,
@@ -86,8 +86,10 @@ final class ExceptionHandler
         }
 
         $written = file_put_contents($this->logDir . '/app.log', $line, FILE_APPEND | LOCK_EX);
-        if ($written === false) {
-            error_log(trim($line));
+        if ($written !== false) {
+            return;
         }
+
+        error_log(trim($line));
     }
 }

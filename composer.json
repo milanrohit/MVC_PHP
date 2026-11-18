@@ -15,6 +15,6 @@
         "dealerdirect/phpcodesniffer-composer-installer": "*",
         "phpcompatibility/php-compatibility": "*",
         "slevomat/coding-standard": "*",
-        "squizlabs/php_codesniffer": "^3.13"
+        "squizlabs/php_codesniffer": "*"
     }
 }
