@@ -29,11 +29,6 @@ final class Application
         return $this->container;
     }
 
-    public static function getRequest(): ?Request
-    {
-        return self::$request;
-    }
-
     public function run(): void
     {
         $debug = (bool) Config::get('app.debug', false);
@@ -52,12 +47,17 @@ final class Application
             $router = new Router($this->container);
             $router->middleware(SecurityHeaders::class);
             $router->middleware(CsrfMiddleware::class);
-            require $this->basePath . '/routes/web.php';
+            require_once $this->basePath . '/routes/web.php';
 
             $router->dispatch($request)->send();
         } catch (Throwable $e) {
             $handler->handle($e, $request)->send();
         }
+    }
+
+    public static function getRequest(): ?Request
+    {
+        return self::$request;
     }
 
     private function registerBindings(): void

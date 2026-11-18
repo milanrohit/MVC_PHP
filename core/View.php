@@ -69,7 +69,7 @@ final class View
                 ${$__key} = $__value;
             }
 
-            require $__templatePath;
+            require_once $__templatePath;
         };
 
         ob_start();
