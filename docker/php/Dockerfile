@@ -75,11 +75,17 @@ RUN set -eux; \
     find /var/www/html -type f -exec chmod 644 {} +; \
     mkdir -p /var/www/html/storage; \
     chown -R www-data:www-data /var/www/html/storage; \
-    chmod -R 750 /var/www/html/storage
+    chmod -R 750 /var/www/html/storage; \
+    sed -i 's/^Listen 80$/Listen 8080/' /etc/apache2/ports.conf; \
+    sed -i 's/<VirtualHost \*:80>/<VirtualHost *:8080>/' /etc/apache2/sites-available/000-default.conf; \
+    mkdir -p /var/run/apache2; \
+    chown www-data:www-data /var/run/apache2
 
-EXPOSE 80
+USER www-data
+
+EXPOSE 8080
 
 HEALTHCHECK --interval=20s --timeout=4s --start-period=15s --retries=3 \
-    CMD curl -fsS http://localhost/healthz || exit 1
+    CMD curl -fsS http://localhost:8080/healthz || exit 1
 
-# Apache starts as root only to bind port 80; workers run as www-data (see User/Group in apache2.conf)
+# Apache and its workers run as www-data on an unprivileged port.
