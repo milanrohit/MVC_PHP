@@ -13,7 +13,7 @@ docker compose exec app php database/migrate.php
 # optional phpMyAdmin:  docker compose --profile tools up -d
 ```
 
-App: http://localhost:8088 · MySQL from host: 127.0.0.1:3309 · phpMyAdmin: http://localhost:8081
+App: http://localhost:8088 · MySQL from host: 127.0.0.1:3309 · phpMyAdmin: http://localhost:8083  
 (Host ports 8088/3309 are used on purpose so they never clash with XAMPP's 80/3306.)
 
 ## Option B: XAMPP (PHP 8.5.12 + Apache + MySQL)
