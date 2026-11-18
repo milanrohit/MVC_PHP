@@ -15,7 +15,7 @@ final class ExceptionHandler
     public function register(): void
     {
         set_exception_handler(fn (Throwable $e) => $this->handle($e, null)->send());
-        set_error_handler(function (int $no, string $str, string $file, int $line) {
+        set_error_handler(static function (int $no, string $str, string $file, int $line) {
             if (!(error_reporting() & $no)) {
                 return false;
             }
@@ -31,7 +31,7 @@ final class ExceptionHandler
             $this->log($e);
         }
 
-        $message = ($this->debug || $status < 500) ? $e->getMessage() : 'Server error';
+        $message = $this->debug || $status < 500 ? $e->getMessage() : 'Server error';
         $json = $request?->wantsJson() ?? false;
 
         if ($json) {
@@ -55,7 +55,7 @@ final class ExceptionHandler
         if (!is_dir($this->logDir)) {
             return;
         }
-        $line = sprintf("[%s] %s: %s in %s:%d\n", date('c'), $e::class, $e->getMessage(), $e->getFile(), $e->getLine());
+        $line = \sprintf("[%s] %s: %s in %s:%d\n", date('c'), $e::class, $e->getMessage(), $e->getFile(), $e->getLine());
         @file_put_contents($this->logDir . '/app.log', $line, FILE_APPEND | LOCK_EX);
     }
 }

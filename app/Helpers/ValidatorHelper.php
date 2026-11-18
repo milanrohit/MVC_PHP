@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Helpers;
 
+use app\Helpers\ArrayHelper;
 use InvalidArgumentException;
-use app\Helpers\ArrayHelper as ArrayHelper;
 
 /**
  * SOLID Design: Single Responsibility Principle (SRP) for input data validation.
@@ -51,9 +51,11 @@ final class ValidatorHelper
                     ? self::validateRequired($value)
                     : self::$methodName($value, $parameters, $data);
 
-                if (!$isValid) {
-                    $errors[$field][] = self::getErrorMessage($field, $rule, $parameters);
+                if ($isValid) {
+                    continue;
                 }
+
+                $errors[$field][] = self::getErrorMessage($field, $rule, $parameters);
             }
         }
 
@@ -67,8 +69,8 @@ final class ValidatorHelper
     {
         switch (true) {
             case $value === null:
-            case is_string($value) && trim($value) === '':
-            case is_array($value) && count($value) === 0:
+            case \is_string($value) && trim($value) === '':
+            case \is_array($value) && \count($value) === 0:
                 return false;
             default:
                 return true;
@@ -83,7 +85,7 @@ final class ValidatorHelper
         if ($value === null || $value === '') {
             return true; // Use 'required' to trap empty values instead
         }
-        return is_string($value) && filter_var($value, FILTER_VALIDATE_EMAIL) !== false;
+        return \is_string($value) && filter_var($value, FILTER_VALIDATE_EMAIL) !== false;
     }
 
     /**
@@ -99,11 +101,11 @@ final class ValidatorHelper
         if (is_numeric($value)) {
             return $value >= $min;
         }
-        if (is_string($value)) {
+        if (\is_string($value)) {
             return StringHelper::length($value) >= $min;
         }
-        if (is_array($value)) {
-            return count($value) >= $min;
+        if (\is_array($value)) {
+            return \count($value) >= $min;
         }
         return false;
     }
@@ -121,11 +123,11 @@ final class ValidatorHelper
         if (is_numeric($value)) {
             return $value <= $max;
         }
-        if (is_string($value)) {
+        if (\is_string($value)) {
             return StringHelper::length($value) <= $max;
         }
-        if (is_array($value)) {
-            return count($value) <= $max;
+        if (\is_array($value)) {
+            return \count($value) <= $max;
         }
         return false;
     }
@@ -147,7 +149,7 @@ final class ValidatorHelper
         if ($value === null || $value === '') {
             return true;
         }
-        return is_string($value) && ctype_alnum($value);
+        return \is_string($value) && ctype_alnum($value);
     }
 
     /**
@@ -169,7 +171,7 @@ final class ValidatorHelper
         if ($value === null || $value === '') {
             return true;
         }
-        return in_array((string)$value, $parameters, true);
+        return \in_array((string)$value, $parameters, true);
     }
 
     /**
@@ -180,7 +182,7 @@ final class ValidatorHelper
         if ($value === null || $value === '') {
             return true;
         }
-        return is_string($value) && filter_var($value, FILTER_VALIDATE_URL) !== false;
+        return \is_string($value) && filter_var($value, FILTER_VALIDATE_URL) !== false;
     }
 
     /**
@@ -191,7 +193,7 @@ final class ValidatorHelper
         if ($value === null || $value === '') {
             return true;
         }
-        return is_string($value) && filter_var($value, FILTER_VALIDATE_IP) !== false;
+        return \is_string($value) && filter_var($value, FILTER_VALIDATE_IP) !== false;
     }
 
     /**
@@ -203,7 +205,7 @@ final class ValidatorHelper
             return true;
         }
         $pattern = $parameters[0] ?? '';
-        return is_string($value) && preg_match($pattern, $value) === 1;
+        return \is_string($value) && preg_match($pattern, $value) === 1;
     }
 
     /**
@@ -214,7 +216,7 @@ final class ValidatorHelper
         if ($value === null || $value === '') {
             return true;
         }
-        return is_string($value) && json_validate($value); // PHP 8.3/8.4 Optimized native syntax
+        return \is_string($value) && json_validate($value); // PHP 8.3/8.4 Optimized native syntax
     }
 
     /**
@@ -225,7 +227,7 @@ final class ValidatorHelper
         if ($value === null || $value === '') {
             return true;
         }
-        return is_string($value) && strtotime($value) !== false;
+        return \is_string($value) && strtotime($value) !== false;
     }
 
     /**

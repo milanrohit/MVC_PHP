@@ -20,7 +20,7 @@ final class Config
     {
         $value = self::$items;
         foreach (explode('.', $key) as $segment) {
-            if (!is_array($value) || !array_key_exists($segment, $value)) {
+            if (!\is_array($value) || !\array_key_exists($segment, $value)) {
                 return $default;
             }
             $value = $value[$segment];

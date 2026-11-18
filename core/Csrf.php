@@ -11,7 +11,7 @@ final class Csrf
     public static function token(): string
     {
         $token = Session::get(self::KEY);
-        if (!is_string($token) || $token === '') {
+        if (!\is_string($token) || $token === '') {
             $token = bin2hex(random_bytes(32));
             Session::set(self::KEY, $token);
         }
@@ -21,6 +21,6 @@ final class Csrf
     public static function verify(?string $token): bool
     {
         $known = Session::get(self::KEY);
-        return is_string($known) && is_string($token) && $token !== '' && hash_equals($known, $token);
+        return \is_string($known) && \is_string($token) && $token !== '' && hash_equals($known, $token);
     }
 }

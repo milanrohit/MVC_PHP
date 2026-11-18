@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Helpers;
 
+use InvalidArgumentException;
 use PDO;
 use PDOStatement;
-use InvalidArgumentException;
 use RuntimeException;
 
 /**
@@ -35,29 +35,6 @@ final class SqlHelper
         $pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
 
         self::$pdo = $pdo;
-    }
-
-    /**
-     * 2. Ensure connection exists and return it safely.
-     */
-    private static function getPdo(): PDO
-    {
-        if (self::$pdo === null) {
-            throw new RuntimeException("SqlHelper Connection has not been initialized. Call setConnection() first.");
-        }
-        return self::$pdo;
-    }
-
-    /**
-     * 3. Prepare and cache statements to eliminate parsing overhead on repeated queries.
-     */
-    private static function getPreparedStatement(string $sql): PDOStatement
-    {
-        $hash = md5($sql);
-        if (!isset(self::$statementCache[$hash])) {
-            self::$statementCache[$hash] = self::getPdo()->prepare($sql);
-        }
-        return self::$statementCache[$hash];
     }
 
     /**
@@ -115,13 +92,13 @@ final class SqlHelper
         }
 
         $columns = array_keys($data);
-        $placeholders = array_map(fn($col) => ":{$col}", $columns);
+        $placeholders = array_map(static fn($col) => ":{$col}", $columns);
 
-        $sql = sprintf(
+        $sql = \sprintf(
             "INSERT INTO %s (%s) VALUES (%s)",
             $table,
             implode(', ', $columns),
-            implode(', ', $placeholders)
+            implode(', ', $placeholders),
         );
 
         $stmt = self::getPreparedStatement($sql);
@@ -147,11 +124,11 @@ final class SqlHelper
             $executeParams["update_{$column}"] = $value;
         }
 
-        $sql = sprintf(
+        $sql = \sprintf(
             "UPDATE %s SET %s WHERE %s",
             $table,
             implode(', ', $assignments),
-            $where
+            $where,
         );
 
         $stmt = self::getPreparedStatement($sql);
@@ -165,7 +142,7 @@ final class SqlHelper
      */
     public static function delete(string $table, string $where, array $whereParams = []): int
     {
-        $sql = sprintf("DELETE FROM %s WHERE %s", $table, $where);
+        $sql = \sprintf("DELETE FROM %s WHERE %s", $table, $where);
 
         $stmt = self::getPreparedStatement($sql);
         $stmt->execute($whereParams);
@@ -219,5 +196,28 @@ final class SqlHelper
     public static function clearCache(): void
     {
         self::$statementCache = [];
+    }
+
+    /**
+     * 2. Ensure connection exists and return it safely.
+     */
+    private static function getPdo(): PDO
+    {
+        if (self::$pdo === null) {
+            throw new RuntimeException("SqlHelper Connection has not been initialized. Call setConnection() first.");
+        }
+        return self::$pdo;
+    }
+
+    /**
+     * 3. Prepare and cache statements to eliminate parsing overhead on repeated queries.
+     */
+    private static function getPreparedStatement(string $sql): PDOStatement
+    {
+        $hash = md5($sql);
+        if (!isset(self::$statementCache[$hash])) {
+            self::$statementCache[$hash] = self::getPdo()->prepare($sql);
+        }
+        return self::$statementCache[$hash];
     }
 }

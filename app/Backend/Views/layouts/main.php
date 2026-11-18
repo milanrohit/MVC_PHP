@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /** @var string $content */ /** @var string|null $title */ ?>
 <!doctype html>
 <html lang="en">

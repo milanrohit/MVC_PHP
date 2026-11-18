@@ -176,6 +176,6 @@ final class StringHelper
             return $subject;
         }
         $parts = explode($search, $subject, 2);
-        return array_key_exists(1, $parts) ? $parts[1] : $subject;
+        return \array_key_exists(1, $parts) ? $parts[1] : $subject;
     }
 }

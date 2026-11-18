@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Core\Env;
 
 // Environment-aware host: explicit DB_HOST wins; inside Docker default to "db"; XAMPP -> 127.0.0.1

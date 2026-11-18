@@ -14,7 +14,7 @@ final class CsrfMiddleware implements MiddlewareInterface
 {
     public function handle(Request $request, callable $next): Response
     {
-        if (in_array($request->method(), ['POST', 'PUT', 'PATCH', 'DELETE'], true)) {
+        if (\in_array($request->method(), ['POST', 'PUT', 'PATCH', 'DELETE'], true)) {
             $token = $request->header('X-CSRF-TOKEN') ?? (string) $request->input('_token', '');
             if (!Csrf::verify($token)) {
                 throw new HttpException(419, 'CSRF token mismatch');

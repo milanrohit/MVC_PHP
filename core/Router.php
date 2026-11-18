@@ -36,14 +36,6 @@ final class Router
         $this->middleware[] = $class;
     }
 
-    private function add(string $method, string $path, array|callable $handler): void
-    {
-        $path = '/' . trim($path, '/');
-        // {id} -> named capture group
-        $regex = '#^' . preg_replace('#\{(\w+)\}#', '(?P<$1>[^/]+)', $path) . '$#';
-        $this->routes[$method][] = [$regex, $handler];
-    }
-
     public function dispatch(Request $request): Response
     {
         $core = fn (Request $r): Response => $this->resolve($r);
@@ -53,9 +45,17 @@ final class Router
             array_reverse($this->middleware),
             fn (callable $next, string $class) =>
                 fn (Request $r): Response => $this->container->make($class)->handle($r, $next),
-            $core
+            $core,
         );
         return $pipeline($request);
+    }
+
+    private function add(string $method, string $path, array|callable $handler): void
+    {
+        $path = '/' . trim($path, '/');
+        // {id} -> named capture group
+        $regex = '#^' . preg_replace('#\{(\w+)\}#', '(?P<$1>[^/]+)', $path) . '$#';
+        $this->routes[$method][] = [$regex, $handler];
     }
 
     private function resolve(Request $request): Response
@@ -82,7 +82,7 @@ final class Router
 
     private function call(array|callable $handler, Request $request, array $params): Response
     {
-        if (is_array($handler)) {
+        if (\is_array($handler)) {
             [$class, $action] = $handler;
             $handler = [$this->container->make($class), $action];
         }
@@ -90,7 +90,7 @@ final class Router
 
         return match (true) {
             $result instanceof Response => $result,
-            is_array($result)           => Response::json($result),
+            \is_array($result)           => Response::json($result),
             default                     => Response::html((string) $result),
         };
     }

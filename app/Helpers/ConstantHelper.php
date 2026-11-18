@@ -10,16 +10,6 @@ namespace App\Helpers;
  */
 final class ConstantHelper
 {
-    /**
-     * Instantiation is blocked to enforce a strict, immutable dictionary catalog.
-     */
-    private function __construct()
-    {
-    }
-
-    // =========================================================================
-    // 1. APPLICATION META & SPECS
-    // =========================================================================
     public const string APP_VERSION = '2.4.0';
     public const string DEFAULT_ENCODING = 'UTF-8';
     public const string DEFAULT_TIMEZONE = 'Australia/Sydney';
@@ -112,6 +102,16 @@ final class ConstantHelper
     public const string MSG_ERR_AUTH = 'Access Denied. Security signatures do not match.';
     public const string MSG_ERR_VALIDATION = 'Data rules threshold checking failed validation.';
     public const string MSG_ERR_CRITICAL = 'Engine fault. Check system logs for full diagnostics tracking.';
+
+    /**
+     * Instantiation is blocked to enforce a strict, immutable dictionary catalog.
+     */
+    private function __construct()
+    {
+    }// =========================================================================
+// 1. APPLICATION META & SPECS
+// =========================================================================
+
 
     // =========================================================================
     // 12. RUNTIME LOOKUPS & MAP ENGINES

@@ -37,6 +37,6 @@ final class Env
             return $real;
         }
         $v = self::$vars[$key] ?? null;
-        return ($v === null || $v === '') ? $default : $v;
+        return $v === null || $v === '' ? $default : $v;
     }
 }

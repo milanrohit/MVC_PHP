@@ -29,13 +29,13 @@ final class Database
         $charset = $c['charset'] ?? 'utf8mb4';
         $port    = (int) ($c['port'] ?? 3306);
 
-        $dsn = sprintf(
+        $dsn = \sprintf(
             '%s:host=%s;port=%d;dbname=%s;charset=%s',
             $driver,
             $c['host'],
             $port,
             $c['database'],
-            $charset
+            $charset,
         );
 
         try {
@@ -47,13 +47,13 @@ final class Database
             ]);
         } catch (PDOException $e) {
             // Show WHERE it tried to connect (never the password) so config mistakes are obvious.
-            throw new RuntimeException(sprintf(
+            throw new RuntimeException(\sprintf(
                 'Database connection failed (%s@%s:%d/%s): %s',
                 $c['username'],
                 $c['host'],
                 $port,
                 $c['database'],
-                $e->getMessage()
+                $e->getMessage(),
             ), 0, $e);
         }
     }

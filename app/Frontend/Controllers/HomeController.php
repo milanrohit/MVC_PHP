@@ -27,7 +27,7 @@ final class HomeController extends Controller
 
     public function users(Request $request): Response
     {
-        return $this->json(array_map(fn (User $u) => $u->toArray(), $this->users->list()));
+        return $this->json(array_map(static fn (User $u) => $u->toArray(), $this->users->list()));
     }
 
     public function store(Request $request): Response

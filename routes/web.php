@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use App\Backend\Controllers\HomeController as BackendHome;
 use App\Frontend\Controllers\HomeController as FrontendHome;
-use Core\Router;
 
 /** @var Router $router */
 

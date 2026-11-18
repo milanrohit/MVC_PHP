@@ -9,7 +9,7 @@ final class Response
     public function __construct(
         private string $body = '',
         private int $status = 200,
-        private array $headers = []
+        private array $headers = [],
     ) {
     }
 
@@ -23,7 +23,7 @@ final class Response
         return new self(
             json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR),
             $status,
-            ['Content-Type' => 'application/json; charset=utf-8']
+            ['Content-Type' => 'application/json; charset=utf-8'],
         );
     }
 

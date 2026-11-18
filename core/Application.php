@@ -13,8 +13,8 @@ use Throwable;
 
 final class Application
 {
-    public static ?Request $request = null;
     public readonly Container $container;
+    public static ?Request $request = null;
 
     public function __construct(private readonly string $basePath)
     {
@@ -22,13 +22,6 @@ final class Application
         Config::load($basePath . '/config');
         $this->container = new Container();
         $this->registerBindings();
-    }
-
-    private function registerBindings(): void
-    {
-        $c = $this->container;
-        $c->singleton(PDO::class, fn () => Database::connection());
-        $c->bind(UserRepositoryInterface::class, UserRepository::class);
     }
 
     public function run(): void
@@ -54,5 +47,12 @@ final class Application
         } catch (Throwable $e) {
             $handler->handle($e, $request)->send();
         }
+    }
+
+    private function registerBindings(): void
+    {
+        $c = $this->container;
+        $c->singleton(PDO::class, static fn () => Database::connection());
+        $c->bind(UserRepositoryInterface::class, UserRepository::class);
     }
 }

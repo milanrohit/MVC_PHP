@@ -5,11 +5,9 @@ declare(strict_types=1);
 // 1. FIXED: Set the correct uppercase App and folder path matching composer rules
 namespace App\Support;
 
-use RuntimeException;
-use Throwable;
-use App\Helpers\SqlHelper as SqlHelper;
-use App\Helpers\ConstantHelper as ConstantHelper;
-use App\Helpers\StringHelper as StringHelper;
+use App\Helpers\ConstantHelper;
+use App\Helpers\SqlHelper;
+use App\Helpers\StringHelper;
 
 /**
  * SOLID Design: Single Responsibility Principle (SRP) for environment testing data instantiation.
@@ -34,16 +32,16 @@ final class DatabaseSeeder
             $log('Truncated all existing sample row definitions cleanly.');
 
             $userIds = self::seedUsers();
-            $log(sprintf('Seeded %d users.', count($userIds)));
+            $log(\sprintf('Seeded %d users.', \count($userIds)));
 
             $categoryIds = self::seedCategories();
-            $log(sprintf('Seeded %d categories.', count($categoryIds)));
+            $log(\sprintf('Seeded %d categories.', \count($categoryIds)));
 
             $productIdsWithPrices = self::seedProducts($categoryIds);
-            $log(sprintf('Seeded %d items.', count($productIdsWithPrices)));
+            $log(\sprintf('Seeded %d items.', \count($productIdsWithPrices)));
 
             $orderCount = self::seedOrdersAndDetails($userIds, $productIdsWithPrices);
-            $log(sprintf('Successfully injected %d customer orders.', $orderCount));
+            $log(\sprintf('Successfully injected %d customer orders.', $orderCount));
         });
 
         $log('Database schema testing configuration process complete.');
@@ -67,7 +65,7 @@ final class DatabaseSeeder
                 'user_master_role'        => 'customer',
                 'user_master_is_active'   => 'Y',
                 'user_master_is_verified' => 'Y',
-            ]
+            ],
         ];
 
         $userIds = [];
@@ -102,7 +100,7 @@ final class DatabaseSeeder
         $productIdsWithPrices = [];
         $i = 0;
         foreach ($productBlueprints as $name => $price) {
-            $catId = $categoryIds[$i % count($categoryIds)];
+            $catId = $categoryIds[$i % \count($categoryIds)];
             $productId = SqlHelper::insert('product_master', [
                 'product_master_category_id' => $catId,
                 'product_master_name'        => $name,
@@ -135,7 +133,7 @@ final class DatabaseSeeder
                 $itemsToInsert[] = [
                     'product_id' => $product['id'],
                     'quantity'   => $qty,
-                    'price'      => $product['price']
+                    'price'      => $product['price'],
                 ];
             }
 

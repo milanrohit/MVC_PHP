@@ -6,7 +6,6 @@ namespace App\Helpers;
 
 use ReflectionClass;
 use ReflectionMethod;
-use RuntimeException;
 
 /**
  * SOLID Design: Single Responsibility Principle (SRP) for granular runtime diagnostics and profiling.
@@ -48,9 +47,11 @@ final class DebugHelper
             }
         }
 
-        if (!$isCli) {
-            echo '</pre>';
+        if ($isCli) {
+            return;
         }
+
+        echo '</pre>';
     }
 
     /**
@@ -69,7 +70,7 @@ final class DebugHelper
     {
         self::$timers[$name] = [
             'time' => microtime(true),
-            'memory' => memory_get_usage()
+            'memory' => memory_get_usage(),
         ];
     }
 
@@ -90,8 +91,8 @@ final class DebugHelper
 
         return [
             'timer_name'     => $name,
-            'duration_ms'    => sprintf('%.2f ms', ($endTime - $startData['time']) * 1000),
-            'memory_used_kb' => sprintf('%.2f KB', ($endMemory - $startData['memory']) / 1024),
+            'duration_ms'    => \sprintf('%.2f ms', ($endTime - $startData['time']) * 1000),
+            'memory_used_kb' => \sprintf('%.2f KB', ($endMemory - $startData['memory']) / 1024),
         ];
     }
 
@@ -104,10 +105,10 @@ final class DebugHelper
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $limit + 1);
         array_shift($trace); // Remove DebugHelper trace framework frame
 
-        return array_map(fn($frame) => [
+        return array_map(static fn($frame) => [
             'file'     => $frame['file'] ?? 'Closure/CoreEngine',
             'line'     => $frame['line'] ?? 0,
-            'call'     => ($frame['class'] ?? '') . ($frame['type'] ?? '') . ($frame['function'] ?? 'unknown')
+            'call'     => ($frame['class'] ?? '') . ($frame['type'] ?? '') . ($frame['function'] ?? 'unknown'),
         ], $trace);
     }
 
@@ -117,10 +118,10 @@ final class DebugHelper
     public static function getMemoryProfile(): array
     {
         return [
-            'current_allocated' => sprintf(self::MEMORY_FORMAT, memory_get_usage(false) / 1024 / 1024),
-            'current_real_os'   => sprintf(self::MEMORY_FORMAT, memory_get_usage(true) / 1024 / 1024),
-            'peak_allocated'    => sprintf(self::MEMORY_FORMAT, memory_get_peak_usage(false) / 1024 / 1024),
-            'peak_real_os'      => sprintf(self::MEMORY_FORMAT, memory_get_peak_usage(true) / 1024 / 1024),
+            'current_allocated' => \sprintf(self::MEMORY_FORMAT, memory_get_usage(false) / 1024 / 1024),
+            'current_real_os'   => \sprintf(self::MEMORY_FORMAT, memory_get_usage(true) / 1024 / 1024),
+            'peak_allocated'    => \sprintf(self::MEMORY_FORMAT, memory_get_peak_usage(false) / 1024 / 1024),
+            'peak_real_os'      => \sprintf(self::MEMORY_FORMAT, memory_get_peak_usage(true) / 1024 / 1024),
         ];
     }
 
@@ -133,8 +134,8 @@ final class DebugHelper
 
         return [
             'class_name' => $reflector->getName(),
-            'properties' => array_map(fn($prop) => $prop->getName(), $reflector->getProperties()),
-            'methods'    => array_map(fn($method) => $method->getName(), $reflector->getMethods(ReflectionMethod::IS_PUBLIC)),
+            'properties' => array_map(static fn($prop) => $prop->getName(), $reflector->getProperties()),
+            'methods'    => array_map(static fn($method) => $method->getName(), $reflector->getMethods(ReflectionMethod::IS_PUBLIC)),
         ];
     }
 
@@ -143,18 +144,18 @@ final class DebugHelper
      */
     public static function log(mixed $message, string $level = 'DEBUG'): void
     {
-        $logFile = dirname(__DIR__, 2) . '/storage/logs/debug.log';
+        $logFile = \dirname(__DIR__, 2) . '/storage/logs/debug.log';
 
-        if (!is_dir(dirname($logFile))) {
-            mkdir(dirname($logFile), 0755, true);
+        if (!is_dir(\dirname($logFile))) {
+            mkdir(\dirname($logFile), 0755, true);
         }
 
-        $entry = sprintf(
+        $entry = \sprintf(
             "[%s] [%s] %s (Location: %s)\n",
             date('Y-m-d H:i:s'),
             strtoupper($level),
-            is_scalar($message) ? (string)$message : json_encode($message, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
-            self::getCallerLocation(0)
+            \is_scalar($message) ? (string)$message : json_encode($message, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+            self::getCallerLocation(0),
         );
 
         file_put_contents($logFile, $entry, FILE_APPEND | LOCK_EX);
@@ -171,7 +172,7 @@ final class DebugHelper
         }
         $end = microtime(true);
 
-        return sprintf('Executed %d times in %.4f seconds (Avg: %.6fs per run)', $iterations, $end - $start, ($end - $start) / $iterations);
+        return \sprintf('Executed %d times in %.4f seconds (Avg: %.6fs per run)', $iterations, $end - $start, ($end - $start) / $iterations);
     }
 
     /**
@@ -179,15 +180,17 @@ final class DebugHelper
      */
     public static function getRequestHeaders(): array
     {
-        if (function_exists('getallheaders')) {
+        if (\function_exists('getallheaders')) {
             return getallheaders();
         }
 
         $headers = [];
         foreach ($_SERVER as $name => $value) {
-            if (str_starts_with($name, 'HTTP_')) {
-                $headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
+            if (!str_starts_with($name, 'HTTP_')) {
+                continue;
             }
+
+            $headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
         }
         return $headers;
     }
@@ -223,7 +226,7 @@ final class DebugHelper
      */
     public static function checkExtension(string $extensionName): bool
     {
-        return extension_loaded($extensionName);
+        return \extension_loaded($extensionName);
     }
 
     /**

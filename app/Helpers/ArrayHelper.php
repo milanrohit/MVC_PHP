@@ -27,7 +27,7 @@ final class ArrayHelper
         }
 
         foreach (explode('.', $key) as $segment) {
-            if (!is_array($array) || !array_key_exists($segment, $array)) {
+            if (!\is_array($array) || !\array_key_exists($segment, $array)) {
                 return $default;
             }
             $array = $array[$segment];
@@ -42,11 +42,11 @@ final class ArrayHelper
     public static function has(array $array, string $key): bool
     {
         if (!str_contains($key, '.')) {
-            return array_key_exists($key, $array);
+            return \array_key_exists($key, $array);
         }
 
         foreach (explode('.', $key) as $segment) {
-            if (!is_array($array) || !array_key_exists($segment, $array)) {
+            if (!\is_array($array) || !\array_key_exists($segment, $array)) {
                 return false;
             }
             $array = $array[$segment];
@@ -62,9 +62,9 @@ final class ArrayHelper
     {
         $keys = explode('.', $key);
 
-        while (count($keys) > 1) {
+        while (\count($keys) > 1) {
             $key = array_shift($keys);
-            if (!isset($array[$key]) || !is_array($array[$key])) {
+            if (!isset($array[$key]) || !\is_array($array[$key])) {
                 $array[$key] = [];
             }
             $array = &$array[$key];
@@ -131,7 +131,7 @@ final class ArrayHelper
         $results = [];
 
         foreach ($array as $key => $value) {
-            if (is_array($value) && !empty($value)) {
+            if (\is_array($value) && !empty($value)) {
                 $results = array_merge($results, self::flatten($value, $prepend . $key . '.'));
             } else {
                 $results[$prepend . $key] = $value;
@@ -157,7 +157,7 @@ final class ArrayHelper
         if (empty($array)) {
             return false;
         }
-        return array_keys($array) !== range(0, count($array) - 1);
+        return array_keys($array) !== range(0, \count($array) - 1);
     }
 
     /**
@@ -168,7 +168,7 @@ final class ArrayHelper
         if ($value === null) {
             return [];
         }
-        return is_array($value) ? $value : [$value];
+        return \is_array($value) ? $value : [$value];
     }
 
     /**
@@ -178,10 +178,12 @@ final class ArrayHelper
     {
         $result = [];
         foreach ($array as $item) {
-            $groupKey = is_object($item) ? ($item->{$key} ?? null) : ($item[$key] ?? null);
-            if ($groupKey !== null) {
-                $result[$groupKey][] = $item;
+            $groupKey = \is_object($item) ? ($item->{$key} ?? null) : ($item[$key] ?? null);
+            if ($groupKey === null) {
+                continue;
             }
+
+            $result[$groupKey][] = $item;
         }
         return $result;
     }
@@ -192,10 +194,12 @@ final class ArrayHelper
     public static function filterRecursive(array $array): array
     {
         foreach ($array as &$value) {
-            if (is_array($value)) {
-                $value = self::filterRecursive($value);
+            if (!\is_array($value)) {
+                continue;
             }
+
+            $value = self::filterRecursive($value);
         }
-        return array_filter($array, fn($val) => $val !== null && $val !== '' && $val !== []);
+        return array_filter($array, static fn($val) => $val !== null && $val !== '' && $val !== []);
     }
 }

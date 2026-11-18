@@ -27,7 +27,7 @@ final class Migrator
         $ran = [];
         foreach ($files as $file) {
             $name = basename($file);
-            if (in_array($name, $done, true)) {
+            if (\in_array($name, $done, true)) {
                 continue;
             }
             $this->pdo->exec((string) file_get_contents($file));

@@ -1,6 +1,7 @@
 <?php
 
 // Usage: php database/migrate.php   (or: docker compose exec app php database/migrate.php)
+
 declare(strict_types=1);
 
 define('BASE_PATH', dirname(__DIR__));
@@ -67,11 +68,11 @@ function runDatabaseMigrations(): void
 
             // Parameterized query checking against system catalog tables
             $tableCheck = $pdoInit->prepare(
-                'SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = :dbname AND TABLE_NAME = :table_name LIMIT 1'
+                'SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = :dbname AND TABLE_NAME = :table_name LIMIT 1',
             );
             $tableCheck->execute([
                 'dbname'     => $sanitizedDbName,
-                'table_name' => 'migrations'
+                'table_name' => 'migrations',
             ]);
 
             // PHP 8.5+ Strict type verification on column fetch
@@ -103,7 +104,7 @@ function runDatabaseMigrations(): void
         } else {
             echo PHP_EOL . "\033[1;34mℹ Info:\033[0m Nothing new to migrate. Database is already up to date." . PHP_EOL . PHP_EOL;
         }
-    } catch (Exception $e) {
+    } catch (\Throwable $e) {
         echo PHP_EOL . "\033[41m\033[37m ERROR \033[0m Migration Execution Error: " . $e->getMessage() . PHP_EOL;
         exit(1);
     }
