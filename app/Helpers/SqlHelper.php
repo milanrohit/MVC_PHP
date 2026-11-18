@@ -4,18 +4,28 @@ declare(strict_types=1);
 
 namespace App\Helpers;
 
+use Generator;
 use InvalidArgumentException;
 use PDO;
 use PDOStatement;
 use RuntimeException;
+use Throwable;
+
+/** Exception thrown when SqlHelper is used before a PDO connection is configured. */
+final class SqlHelperConnectionException extends RuntimeException
+{
+}
 
 /**
- * SOLID Design: Single Responsibility Principle (SRP) for database interaction abstractions.
- * Optimization: Prepared statement reuse, strict type safety, and memory-conscious streaming fetches.
+ * Single Responsibility Principle (SRP) helper for database interaction abstractions.
  */
 final class SqlHelper
 {
+    private const string IDENTIFIER_PATTERN = '/^[a-zA-Z_][a-zA-Z0-9_]{0,63}$/';
+
     private static ?PDO $pdo = null;
+
+    /** @var array<string, PDOStatement> */
     private static array $statementCache = [];
 
     /**
@@ -26,7 +36,7 @@ final class SqlHelper
     }
 
     /**
-     * 1. Initialize the helper with a shared PDO instance.
+     * Initialize the helper with a shared PDO instance.
      */
     public static function setConnection(PDO $pdo): void
     {
@@ -38,95 +48,125 @@ final class SqlHelper
     }
 
     /**
-     * 4. Fetch ALL rows from a query at once.
+     * Fetch ALL rows from a query at once.
+     *
+     * @param array<string|int, mixed> $params
+     * @return list<array<string, mixed>>
      */
     public static function getAll(string $sql, array $params = []): array
     {
         $stmt = self::getPreparedStatement($sql);
         $stmt->execute($params);
+
+        /** @var list<array<string, mixed>> */
         return $stmt->fetchAll();
     }
 
     /**
-     * 5. Fetch a SINGLE row from a query. Returns null if no record is found.
+     * Fetch a SINGLE row from a query. Returns null if no record is found.
+     *
+     * @param array<string|int, mixed> $params
+     * @return array<string, mixed>|null
      */
     public static function getOneRow(string $sql, array $params = []): ?array
     {
         $stmt = self::getPreparedStatement($sql);
         $stmt->execute($params);
+
+        /** @var array<string, mixed>|false $result */
         $result = $stmt->fetch();
-        return $result ?: null;
+
+        return is_array($result) ? $result : null;
     }
 
     /**
-     * 6. Fetch a SINGLE column value from a single row (e.g., COUNT(*), MAX(id)).
+     * Fetch a SINGLE column value from a single row (e.g., COUNT(*), MAX(id)).
+     *
+     * @param array<string|int, mixed> $params
      */
     public static function getValue(string $sql, array $params = []): mixed
     {
         $stmt = self::getPreparedStatement($sql);
         $stmt->execute($params);
+
         return $stmt->fetchColumn();
     }
 
     /**
-     * 7. High-Performance Stream Fetch: Iterates through records line-by-line using standard PHP Generators.
-     * Prevents out-of-memory crashes when dealing with millions of records.
+     * Stream records line-by-line using PHP Generators to prevent out-of-memory crashes.
+     *
+     * @param array<string|int, mixed> $params
+     * @return Generator<int, array<string, mixed>>
      */
-    public static function stream(string $sql, array $params = []): \Generator
+    public static function stream(string $sql, array $params = []): Generator
     {
-        $stmt = self::getPdo()->prepare($sql); // Do not cache streaming queries to allow execution recycling
+        $stmt = self::getPdo()->prepare($sql);
         $stmt->execute($params);
 
-        while ($row = $stmt->fetch()) {
+        /** @var array<string, mixed>|false $row */
+        while (($row = $stmt->fetch()) !== false) {
             yield $row;
         }
     }
 
     /**
-     * 8. DML: INSERT a record into a table cleanly using key-value array pairing.
+     * INSERT a record into a table cleanly using key-value array pairing.
+     *
+     * @param array<string, mixed> $data
      */
     public static function insert(string $table, array $data): string|int
     {
-        if (empty($data)) {
-            throw new InvalidArgumentException("Cannot execute an insert with an empty dataset.");
+        if ($data === []) {
+            throw new InvalidArgumentException('Cannot execute an insert with an empty dataset.');
         }
 
+        $safeTable = self::quoteIdentifier($table);
         $columns = array_keys($data);
-        $placeholders = array_map(static fn($col) => ":{$col}", $columns);
+        $quotedColumns = array_map(self::quoteIdentifier(...), $columns);
+        $placeholders = array_map(static fn (string $col): string => ":{$col}", $columns);
 
-        $sql = \sprintf(
-            "INSERT INTO %s (%s) VALUES (%s)",
-            $table,
-            implode(', ', $columns),
+        $sql = sprintf(
+            'INSERT INTO %s (%s) VALUES (%s)',
+            $safeTable,
+            implode(', ', $quotedColumns),
             implode(', ', $placeholders),
         );
 
         $stmt = self::getPreparedStatement($sql);
         $stmt->execute($data);
 
-        return self::getPdo()->lastInsertId();
+        return (string) self::getPdo()->lastInsertId();
     }
 
     /**
-     * 9. DML: UPDATE records in a table matching structured conditions.
+     * UPDATE records in a table matching structured conditions.
+     *
+     * @param array<string, mixed> $data
+     * @param array<string|int, mixed> $whereParams
      */
     public static function update(string $table, array $data, string $where, array $whereParams = []): int
     {
-        if (empty($data)) {
-            throw new InvalidArgumentException("Cannot execute an update with an empty dataset.");
+        if ($data === []) {
+            throw new InvalidArgumentException('Cannot execute an update with an empty dataset.');
         }
 
+        if (trim($where) === '') {
+            throw new InvalidArgumentException('Update statement requires a non-empty WHERE clause.');
+        }
+
+        $safeTable = self::quoteIdentifier($table);
         $assignments = [];
         $executeParams = [];
 
         foreach ($data as $column => $value) {
-            $assignments[] = "{$column} = :update_{$column}";
+            $safeColumn = self::quoteIdentifier($column);
+            $assignments[] = "{$safeColumn} = :update_{$column}";
             $executeParams["update_{$column}"] = $value;
         }
 
-        $sql = \sprintf(
-            "UPDATE %s SET %s WHERE %s",
-            $table,
+        $sql = sprintf(
+            'UPDATE %s SET %s WHERE %s',
+            $safeTable,
             implode(', ', $assignments),
             $where,
         );
@@ -138,11 +178,18 @@ final class SqlHelper
     }
 
     /**
-     * 10. DML: DELETE records matching structured conditions.
+     * DELETE records matching structured conditions.
+     *
+     * @param array<string|int, mixed> $whereParams
      */
     public static function delete(string $table, string $where, array $whereParams = []): int
     {
-        $sql = \sprintf("DELETE FROM %s WHERE %s", $table, $where);
+        if (trim($where) === '') {
+            throw new InvalidArgumentException('Delete statement requires a non-empty WHERE clause.');
+        }
+
+        $safeTable = self::quoteIdentifier($table);
+        $sql = sprintf('DELETE FROM %s WHERE %s', $safeTable, $where);
 
         $stmt = self::getPreparedStatement($sql);
         $stmt->execute($whereParams);
@@ -151,7 +198,7 @@ final class SqlHelper
     }
 
     /**
-     * 11. Transaction: Start a database transaction block wrapper.
+     * Start a database transaction block wrapper.
      */
     public static function beginTransaction(): bool
     {
@@ -159,7 +206,7 @@ final class SqlHelper
     }
 
     /**
-     * 12. Transaction: Commit changes safely to the storage layer.
+     * Commit changes safely to the storage layer.
      */
     public static function commit(): bool
     {
@@ -167,7 +214,7 @@ final class SqlHelper
     }
 
     /**
-     * 13. Transaction: Rollback changes instantly if any problem arises.
+     * Rollback changes instantly if any problem arises.
      */
     public static function rollBack(): bool
     {
@@ -175,49 +222,61 @@ final class SqlHelper
     }
 
     /**
-     * 14. Transaction Wrapper: Safely executes a callback inside a bulletproof transactional container.
+     * Safely execute a callback inside a transactional container.
+     *
+     * @template TReturn
+     * @param callable(): TReturn $callback
+     * @return TReturn
      */
     public static function transactional(callable $callback): mixed
     {
         self::beginTransaction();
+
         try {
             $result = $callback();
             self::commit();
+
             return $result;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             self::rollBack();
+
             throw $e;
         }
     }
 
     /**
-     * 15. Clear out statement compilation caches to free server engine memory profiles.
+     * Clear statement compilation caches to free memory.
      */
     public static function clearCache(): void
     {
         self::$statementCache = [];
     }
 
-    /**
-     * 2. Ensure connection exists and return it safely.
-     */
+    private static function quoteIdentifier(string $identifier): string
+    {
+        if (preg_match(self::IDENTIFIER_PATTERN, $identifier) !== 1) {
+            throw new InvalidArgumentException("Invalid SQL identifier: '{$identifier}'.");
+        }
+
+        return '`' . $identifier . '`';
+    }
+
     private static function getPdo(): PDO
     {
         if (self::$pdo === null) {
-            throw new RuntimeException("SqlHelper Connection has not been initialized. Call setConnection() first.");
+            throw new SqlHelperConnectionException('SqlHelper connection has not been initialized. Call setConnection() first.');
         }
+
         return self::$pdo;
     }
 
-    /**
-     * 3. Prepare and cache statements to eliminate parsing overhead on repeated queries.
-     */
     private static function getPreparedStatement(string $sql): PDOStatement
     {
-        $hash = md5($sql);
+        $hash = hash('xxh128', $sql);
         if (!isset(self::$statementCache[$hash])) {
             self::$statementCache[$hash] = self::getPdo()->prepare($sql);
         }
+
         return self::$statementCache[$hash];
     }
 }
