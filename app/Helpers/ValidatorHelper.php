@@ -11,7 +11,6 @@ use InvalidArgumentException;
  */
 final class ValidatorHelper
 {
-    /** @var array<string, string> */
     private const array ERROR_TEMPLATES = [
         'required' => 'The :field field is required.',
         'email' => 'The :field must be a valid email address.',
@@ -26,6 +25,22 @@ final class ValidatorHelper
         'regex' => 'The :field format is invalid.',
         'json' => 'The :field must be a valid JSON string.',
         'date' => 'The :field is not a valid date.',
+    ];
+
+    private const array RULE_METHODS = [
+        'required' => 'validateRequired',
+        'email' => 'validateEmail',
+        'min' => 'validateMin',
+        'max' => 'validateMax',
+        'confirmed' => 'validateConfirmed',
+        'alpha_numeric' => 'validateAlphaNumeric',
+        'numeric' => 'validateNumeric',
+        'in' => 'validateIn',
+        'url' => 'validateUrl',
+        'ip' => 'validateIp',
+        'regex' => 'validateRegex',
+        'json' => 'validateJson',
+        'date' => 'validateDate',
     ];
 
     /**
@@ -52,9 +67,11 @@ final class ValidatorHelper
             foreach ($fieldRules as $rawRule) {
                 [$ruleName, $parameters] = self::parseRule($rawRule);
 
-                if (!self::evaluateRule($ruleName, $value, $parameters, $data)) {
-                    $errors[$field][] = self::getErrorMessage($field, $ruleName, $parameters);
+                if (self::evaluateRule($ruleName, $value, $parameters, $data)) {
+                    continue;
                 }
+
+                $errors[$field][] = self::getErrorMessage($field, $ruleName, $parameters);
             }
         }
 
@@ -81,30 +98,20 @@ final class ValidatorHelper
      */
     private static function evaluateRule(string $rule, mixed $value, array $parameters, array $data): bool
     {
-        return match ($rule) {
-            'required' => self::validateRequired($value),
-            'email' => self::validateEmail($value),
-            'min' => self::validateMin($value, $parameters),
-            'max' => self::validateMax($value, $parameters),
-            'confirmed' => self::validateConfirmed($value, $parameters, $data),
-            'alpha_numeric' => self::validateAlphaNumeric($value),
-            'numeric' => self::validateNumeric($value),
-            'in' => self::validateIn($value, $parameters),
-            'url' => self::validateUrl($value),
-            'ip' => self::validateIp($value),
-            'regex' => self::validateRegex($value, $parameters),
-            'json' => self::validateJson($value),
-            'date' => self::validateDate($value),
-            default => throw new InvalidArgumentException("Validation rule '{$rule}' does not exist."),
-        };
+        $method = self::RULE_METHODS[$rule] ?? null;
+        if ($method === null) {
+            throw new InvalidArgumentException("Validation rule '{$rule}' does not exist.");
+        }
+
+        return (bool) self::$method($value, $parameters, $data);
     }
 
     private static function validateRequired(mixed $value): bool
     {
         return match (true) {
             $value === null => false,
-            is_string($value) && trim($value) === '' => false,
-            is_array($value) && count($value) === 0 => false,
+            \is_string($value) && trim($value) === '' => false,
+            \is_array($value) && \count($value) === 0 => false,
             default => true,
         };
     }
@@ -115,7 +122,7 @@ final class ValidatorHelper
             return true;
         }
 
-        return is_string($value) && filter_var($value, FILTER_VALIDATE_EMAIL) !== false;
+        return \is_string($value) && filter_var($value, FILTER_VALIDATE_EMAIL) !== false;
     }
 
     /** @param list<string> $parameters */
@@ -129,8 +136,8 @@ final class ValidatorHelper
 
         return match (true) {
             is_numeric($value) => $value >= $min,
-            is_string($value) => StringHelper::length($value) >= $min,
-            is_array($value) => count($value) >= $min,
+            \is_string($value) => StringHelper::length($value) >= $min,
+            \is_array($value) => \count($value) >= $min,
             default => false,
         };
     }
@@ -146,8 +153,8 @@ final class ValidatorHelper
 
         return match (true) {
             is_numeric($value) => $value <= $max,
-            is_string($value) => StringHelper::length($value) <= $max,
-            is_array($value) => count($value) <= $max,
+            \is_string($value) => StringHelper::length($value) <= $max,
+            \is_array($value) => \count($value) <= $max,
             default => false,
         };
     }
@@ -171,7 +178,7 @@ final class ValidatorHelper
             return true;
         }
 
-        return is_string($value) && ctype_alnum($value);
+        return \is_string($value) && ctype_alnum($value);
     }
 
     private static function validateNumeric(mixed $value): bool
@@ -190,7 +197,7 @@ final class ValidatorHelper
             return true;
         }
 
-        return in_array((string) $value, $parameters, true);
+        return \in_array((string) $value, $parameters, true);
     }
 
     private static function validateUrl(mixed $value): bool
@@ -199,7 +206,7 @@ final class ValidatorHelper
             return true;
         }
 
-        return is_string($value) && filter_var($value, FILTER_VALIDATE_URL) !== false;
+        return \is_string($value) && filter_var($value, FILTER_VALIDATE_URL) !== false;
     }
 
     private static function validateIp(mixed $value): bool
@@ -208,7 +215,7 @@ final class ValidatorHelper
             return true;
         }
 
-        return is_string($value) && filter_var($value, FILTER_VALIDATE_IP) !== false;
+        return \is_string($value) && filter_var($value, FILTER_VALIDATE_IP) !== false;
     }
 
     /** @param list<string> $parameters */
@@ -220,7 +227,7 @@ final class ValidatorHelper
 
         $pattern = $parameters[0] ?? '';
 
-        return is_string($value) && preg_match($pattern, $value) === 1;
+        return \is_string($value) && preg_match($pattern, $value) === 1;
     }
 
     private static function validateJson(mixed $value): bool
@@ -229,7 +236,7 @@ final class ValidatorHelper
             return true;
         }
 
-        return is_string($value) && json_validate($value);
+        return \is_string($value) && json_validate($value);
     }
 
     private static function validateDate(mixed $value): bool
@@ -238,7 +245,7 @@ final class ValidatorHelper
             return true;
         }
 
-        return is_string($value) && strtotime($value) !== false;
+        return \is_string($value) && strtotime($value) !== false;
     }
 
     /**
@@ -253,7 +260,7 @@ final class ValidatorHelper
 
         return str_replace(
             [':field', ':param0', ':params'],
-            [$cleanField, $parameters ?? '', implode(', ', $parameters)],
+            [$cleanField, $parameters[0] ?? '', implode(', ', $parameters)],
             $template,
         );
     }

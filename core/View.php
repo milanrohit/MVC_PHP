@@ -32,7 +32,7 @@ final class View
     private static function capture(string $view, array $data, ?string $root): string
     {
         if (str_contains($view, '..')) {
-            throw new InvalidArgumentException(sprintf('Invalid view path [%s].', $view));
+            throw new InvalidArgumentException(\sprintf('Invalid view path [%s].', $view));
         }
 
         $directories = array_filter(
@@ -47,7 +47,7 @@ final class View
             }
         }
 
-        throw new RuntimeException(sprintf('View [%s] not found in [%s].', $view, $root ?? 'app/Views'));
+        throw new RuntimeException(\sprintf('View [%s] not found in [%s].', $view, $root ?? 'app/Views'));
     }
 
     /**
@@ -58,13 +58,15 @@ final class View
         $renderer = static function (string $__templatePath, array $__variables): void {
             foreach ($__variables as $__key => $__value) {
                 if (
-                    is_string($__key)
-                    && $__key !== '__templatePath'
-                    && $__key !== '__variables'
-                    && preg_match(self::VALID_VAR_PATTERN, $__key) === 1
+                    !\is_string($__key)
+                    || $__key === '__templatePath'
+                    || $__key === '__variables'
+                    || preg_match(self::VALID_VAR_PATTERN, $__key) !== 1
                 ) {
-                    ${$__key} = $__value;
+                    continue;
                 }
+
+                ${$__key} = $__value;
             }
 
             require $__templatePath;
