@@ -197,7 +197,7 @@ services:
     container_name: mvc_phpmyadmin
     restart: always
     ports:
-      - "8083     :80"
+      - "8083:80"
     environment:
       PMA_HOST: db
       PMA_PORT: 3306
@@ -244,7 +244,7 @@ Use this step-by-step checklist to initialize or completely reconstruct your wor
 | External Endpoint URL | Targeted Service Pathway | Operational Purpose |
 | :--- | :--- | :--- |
 | `http://localhost:8088/` | `app/Frontend/` via Apache | Serves the main client website storefront. |
-| `http://localhost:8083     /` | `phpmyadmin` container | Accessible GUI for editing and seeding database rows. |
+| `http://localhost:8083/` | `phpmyadmin` container | Accessible GUI for editing and seeding database rows. |
 | `127.0.0.1:3309` | `db` container port mapping | Interface for linking external desktop clients (TablePlus/DBeaver). |
 
 
