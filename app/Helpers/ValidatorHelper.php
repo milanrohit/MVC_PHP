@@ -4,15 +4,30 @@ declare(strict_types=1);
 
 namespace App\Helpers;
 
-use app\Helpers\ArrayHelper;
 use InvalidArgumentException;
 
 /**
- * SOLID Design: Single Responsibility Principle (SRP) for input data validation.
- * Optimization: Early-exit validation rules, array mapping, and zero class-state overhead.
+ * Single Responsibility Principle (SRP) helper for input data validation.
  */
 final class ValidatorHelper
 {
+    /** @var array<string, string> */
+    private const array ERROR_TEMPLATES = [
+        'required' => 'The :field field is required.',
+        'email' => 'The :field must be a valid email address.',
+        'min' => 'The :field must be at least :param0.',
+        'max' => 'The :field may not be greater than :param0.',
+        'confirmed' => 'The :field confirmation does not match.',
+        'alpha_numeric' => 'The :field may only contain letters and numbers.',
+        'numeric' => 'The :field must be a valid number.',
+        'in' => 'The selected :field is invalid.',
+        'url' => 'The :field format is invalid.',
+        'ip' => 'The :field must be a valid IP address.',
+        'regex' => 'The :field format is invalid.',
+        'json' => 'The :field must be a valid JSON string.',
+        'date' => 'The :field is not a valid date.',
+    ];
+
     /**
      * Instantiation is blocked to enforce an optimized, unified static interface.
      */
@@ -21,41 +36,25 @@ final class ValidatorHelper
     }
 
     /**
-     * 1. Validate data against an array of rules.
-     * Returns an array containing error strings. If valid, returns an empty array.
+     * Validate data against an array of rules.
+     *
+     * @param array<string, mixed> $data
+     * @param array<string, list<string>> $rules
+     * @return array<string, list<string>>
      */
     public static function validate(array $data, array $rules): array
     {
         $errors = [];
 
         foreach ($rules as $field => $fieldRules) {
-            $value = ArrayHelper::get($data, $field); // Leverage our ArrayHelper for nested field access
+            $value = ArrayHelper::get($data, $field);
 
-            foreach ($fieldRules as $rule) {
-                $parameters = [];
+            foreach ($fieldRules as $rawRule) {
+                [$ruleName, $parameters] = self::parseRule($rawRule);
 
-                if (str_contains($rule, ':')) {
-                    [$ruleName, $paramString] = explode(':', $rule, 2);
-                    $parameters = explode(',', $paramString);
-                    $rule = $ruleName;
+                if (!self::evaluateRule($ruleName, $value, $parameters, $data)) {
+                    $errors[$field][] = self::getErrorMessage($field, $ruleName, $parameters);
                 }
-
-                $methodName = 'validate' . StringHelper::camel($rule); // Leverage our StringHelper for clean naming
-
-                if (!method_exists(self::class, $methodName)) {
-                    throw new InvalidArgumentException("Validation rule '{$rule}' does not exist.");
-                }
-
-                // Execute rule check dynamically with an early-exit optimization strategy
-                $isValid = $rule === 'required'
-                    ? self::validateRequired($value)
-                    : self::$methodName($value, $parameters, $data);
-
-                if ($isValid) {
-                    continue;
-                }
-
-                $errors[$field][] = self::getErrorMessage($field, $rule, $parameters);
             }
         }
 
@@ -63,195 +62,199 @@ final class ValidatorHelper
     }
 
     /**
-     * 2. Rule: Check if a value is present and not empty.
+     * @return array{0: string, 1: list<string>}
      */
+    private static function parseRule(string $rawRule): array
+    {
+        if (!str_contains($rawRule, ':')) {
+            return [$rawRule, []];
+        }
+
+        [$ruleName, $paramString] = explode(':', $rawRule, 2);
+
+        return [$ruleName, explode(',', $paramString)];
+    }
+
+    /**
+     * @param list<string> $parameters
+     * @param array<string, mixed> $data
+     */
+    private static function evaluateRule(string $rule, mixed $value, array $parameters, array $data): bool
+    {
+        return match ($rule) {
+            'required' => self::validateRequired($value),
+            'email' => self::validateEmail($value),
+            'min' => self::validateMin($value, $parameters),
+            'max' => self::validateMax($value, $parameters),
+            'confirmed' => self::validateConfirmed($value, $parameters, $data),
+            'alpha_numeric' => self::validateAlphaNumeric($value),
+            'numeric' => self::validateNumeric($value),
+            'in' => self::validateIn($value, $parameters),
+            'url' => self::validateUrl($value),
+            'ip' => self::validateIp($value),
+            'regex' => self::validateRegex($value, $parameters),
+            'json' => self::validateJson($value),
+            'date' => self::validateDate($value),
+            default => throw new InvalidArgumentException("Validation rule '{$rule}' does not exist."),
+        };
+    }
+
     private static function validateRequired(mixed $value): bool
     {
-        switch (true) {
-            case $value === null:
-            case \is_string($value) && trim($value) === '':
-            case \is_array($value) && \count($value) === 0:
-                return false;
-            default:
-                return true;
-        }
+        return match (true) {
+            $value === null => false,
+            is_string($value) && trim($value) === '' => false,
+            is_array($value) && count($value) === 0 => false,
+            default => true,
+        };
     }
 
-    /**
-     * 3. Rule: Check if a value is a valid email address.
-     */
-    private static function validateEmail(mixed $value, array $parameters, array $data): bool
-    {
-        if ($value === null || $value === '') {
-            return true; // Use 'required' to trap empty values instead
-        }
-        return \is_string($value) && filter_var($value, FILTER_VALIDATE_EMAIL) !== false;
-    }
-
-    /**
-     * 4. Rule: Check minimum length or value.
-     */
-    private static function validateMin(mixed $value, array $parameters, array $data): bool
+    private static function validateEmail(mixed $value): bool
     {
         if ($value === null || $value === '') {
             return true;
         }
+
+        return is_string($value) && filter_var($value, FILTER_VALIDATE_EMAIL) !== false;
+    }
+
+    /** @param list<string> $parameters */
+    private static function validateMin(mixed $value, array $parameters): bool
+    {
+        if ($value === null || $value === '') {
+            return true;
+        }
+
         $min = (int) ($parameters[0] ?? 0);
 
-        if (is_numeric($value)) {
-            return $value >= $min;
-        }
-        if (\is_string($value)) {
-            return StringHelper::length($value) >= $min;
-        }
-        if (\is_array($value)) {
-            return \count($value) >= $min;
-        }
-        return false;
+        return match (true) {
+            is_numeric($value) => $value >= $min,
+            is_string($value) => StringHelper::length($value) >= $min,
+            is_array($value) => count($value) >= $min,
+            default => false,
+        };
     }
 
-    /**
-     * 5. Rule: Check maximum length or value.
-     */
-    private static function validateMax(mixed $value, array $parameters, array $data): bool
+    /** @param list<string> $parameters */
+    private static function validateMax(mixed $value, array $parameters): bool
     {
         if ($value === null || $value === '') {
             return true;
         }
+
         $max = (int) ($parameters[0] ?? 0);
 
-        if (is_numeric($value)) {
-            return $value <= $max;
-        }
-        if (\is_string($value)) {
-            return StringHelper::length($value) <= $max;
-        }
-        if (\is_array($value)) {
-            return \count($value) <= $max;
-        }
-        return false;
+        return match (true) {
+            is_numeric($value) => $value <= $max,
+            is_string($value) => StringHelper::length($value) <= $max,
+            is_array($value) => count($value) <= $max,
+            default => false,
+        };
     }
 
     /**
-     * 6. Rule: Check if a value matches another field (e.g., password confirmation).
+     * @param list<string> $parameters
+     * @param array<string, mixed> $data
      */
     private static function validateConfirmed(mixed $value, array $parameters, array $data): bool
     {
-        $confirmationField = ($parameters[0] ?? 'password') . '_confirmation';
+        $confirmationField = ($parameters[0] ?? '') !== ''
+            ? $parameters[0]
+            : 'password_confirmation';
+
         return isset($data[$confirmationField]) && $value === $data[$confirmationField];
     }
 
-    /**
-     * 7. Rule: Check if a value matches a strict alphanumeric structure.
-     */
-    private static function validateAlphaNumeric(mixed $value, array $parameters, array $data): bool
+    private static function validateAlphaNumeric(mixed $value): bool
     {
         if ($value === null || $value === '') {
             return true;
         }
-        return \is_string($value) && ctype_alnum($value);
+
+        return is_string($value) && ctype_alnum($value);
     }
 
-    /**
-     * 8. Rule: Check if a value is a valid numeric digit sequence.
-     */
-    private static function validateNumeric(mixed $value, array $parameters, array $data): bool
+    private static function validateNumeric(mixed $value): bool
     {
         if ($value === null || $value === '') {
             return true;
         }
+
         return is_numeric($value);
     }
 
-    /**
-     * 9. Rule: Check if a value exists within a specific comma-separated list.
-     */
-    private static function validateIn(mixed $value, array $parameters, array $data): bool
+    /** @param list<string> $parameters */
+    private static function validateIn(mixed $value, array $parameters): bool
     {
         if ($value === null || $value === '') {
             return true;
         }
-        return \in_array((string)$value, $parameters, true);
+
+        return in_array((string) $value, $parameters, true);
     }
 
-    /**
-     * 10. Rule: Check if a value is a valid URL string pattern.
-     */
-    private static function validateUrl(mixed $value, array $parameters, array $data): bool
+    private static function validateUrl(mixed $value): bool
     {
         if ($value === null || $value === '') {
             return true;
         }
-        return \is_string($value) && filter_var($value, FILTER_VALIDATE_URL) !== false;
+
+        return is_string($value) && filter_var($value, FILTER_VALIDATE_URL) !== false;
     }
 
-    /**
-     * 11. Rule: Check if a value is a valid IPv4 or IPv6 address.
-     */
-    private static function validateIp(mixed $value, array $parameters, array $data): bool
+    private static function validateIp(mixed $value): bool
     {
         if ($value === null || $value === '') {
             return true;
         }
-        return \is_string($value) && filter_var($value, FILTER_VALIDATE_IP) !== false;
+
+        return is_string($value) && filter_var($value, FILTER_VALIDATE_IP) !== false;
     }
 
-    /**
-     * 12. Rule: Check if a value matches a specific regex layout pattern.
-     */
-    private static function validateRegex(mixed $value, array $parameters, array $data): bool
+    /** @param list<string> $parameters */
+    private static function validateRegex(mixed $value, array $parameters): bool
     {
         if ($value === null || $value === '') {
             return true;
         }
+
         $pattern = $parameters[0] ?? '';
-        return \is_string($value) && preg_match($pattern, $value) === 1;
+
+        return is_string($value) && preg_match($pattern, $value) === 1;
     }
 
-    /**
-     * 13. Rule: Check if a field value matches a valid JSON format string.
-     */
-    private static function validateJson(mixed $value, array $parameters, array $data): bool
+    private static function validateJson(mixed $value): bool
     {
         if ($value === null || $value === '') {
             return true;
         }
-        return \is_string($value) && json_validate($value); // PHP 8.3/8.4 Optimized native syntax
+
+        return is_string($value) && json_validate($value);
     }
 
-    /**
-     * 14. Rule: Check if a value is a valid ISO 8601 date.
-     */
-    private static function validateDate(mixed $value, array $parameters, array $data): bool
+    private static function validateDate(mixed $value): bool
     {
         if ($value === null || $value === '') {
             return true;
         }
-        return \is_string($value) && strtotime($value) !== false;
+
+        return is_string($value) && strtotime($value) !== false;
     }
 
     /**
-     * 15. Formats a clear, scannable validation failure error message template.
+     * Formats a clear, scannable validation failure error message template.
+     *
+     * @param list<string> $parameters
      */
     private static function getErrorMessage(string $field, string $rule, array $parameters): string
     {
-        $cleanField = ucwords(str_replace(['_', '-'], ' ', $field));
+        $cleanField = ucwords(str_replace(['_', '.'], ' ', $field));
+        $template = self::ERROR_TEMPLATES[$rule] ?? 'The :field field is invalid.';
 
-        return match ($rule) {
-            'required'      => "The {$cleanField} field is strictly required.",
-            'email'         => "The {$cleanField} must be a valid email registration address.",
-            'min'           => "The {$cleanField} must meet a minimum size criteria of {$parameters[0]}.",
-            'max'           => "The {$cleanField} cannot exceed a maximum capacity boundary of {$parameters[0]}.",
-            'confirmed'     => "The {$cleanField} confirmation match has failed validation rules.",
-            'alpha_numeric' => "The {$cleanField} must consist strictly of alphanumeric elements.",
-            'numeric'       => "The {$cleanField} must resolve as a clean numerical entity.",
-            'in'            => "The selected {$cleanField} selection choice is completely invalid.",
-            'url'           => "The {$cleanField} format must match a structured link context routing string.",
-            'ip'            => "The {$cleanField} must map to a standardized web terminal IP address configuration.",
-            'regex'         => "The {$cleanField} configuration has failed a strict token matching matrix test.",
-            'json'          => "The {$cleanField} variable payload must translate to a valid structured JSON context.",
-            'date'          => "The {$cleanField} value must map correctly into a verifiable date timestamp sequence.",
-            default         => "The {$cleanField} parameter configuration has thrown a runtime formatting error status."
-        };
+        return str_replace(
+            [':field', ':param0', ':params'],
+            [$cleanField, $parameters ?? '', implode(', ', $parameters)],
+            $template,
+        );
     }
 }
