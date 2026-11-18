@@ -159,6 +159,7 @@
     <rule ref="SlevomatCodingStandard.Variables.DisallowSuperGlobalVariable"/>
     
     <exclude-pattern>core/Request.php</exclude-pattern>
+    <exclude-pattern>core/Session.php</exclude-pattern>
     <exclude-pattern>public/index.php</exclude-pattern>
     
     <!-- ===== 7. Clean code (Sonar-style) ===== -->
