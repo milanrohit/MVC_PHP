@@ -1,13 +1,18 @@
+name: mvc_tools
+
 services:
   tools:
     build: ./docker/tools
     working_dir: /app
     volumes:
       - .:/app
+      - tools-vendor:/app/vendor
       - composer-cache:/tmp/composer
     environment:
       COMPOSER_CACHE_DIR: /tmp/composer
       COMPOSER_ALLOW_SUPERUSER: "1"
+      COMPOSER_PROCESS_TIMEOUT: "0"
 
 volumes:
+  tools-vendor:
   composer-cache:

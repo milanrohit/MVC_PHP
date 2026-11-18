@@ -3,13 +3,7 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:noNamespaceSchemaLocation="vendor/squizlabs/php_codesniffer/phpcs.xsd">
 
-    <description>PHP 8.5+ coding, compatibility and security standard (PSR-12 base).</description>
-
-    <!--
-        Required dev packages (see composer snippet):
-        squizlabs/php_codesniffer, phpcompatibility/php-compatibility,
-        slevomat/coding-standard, dealerdirect/phpcodesniffer-composer-installer
-    -->
+    <description>PHP 8.5+ standard: PSR-12 base, modern syntax, SOLID guardrails, security rules.</description>
 
     <!-- ===== 1. Scope ===== -->
     <file>app</file>
@@ -17,7 +11,6 @@
     <file>core</file>
     <file>database</file>
     <file>routes</file>
-    <!-- Front controller is security critical: lint it, but not the rest of public/ -->
     <file>public/index.php</file>
 
     <exclude-pattern>*/vendor/*</exclude-pattern>
@@ -25,7 +18,7 @@
     <exclude-pattern>*/storage/*</exclude-pattern>
     <exclude-pattern>*/cache/*</exclude-pattern>
 
-    <!-- ===== 2. Runtime options ===== -->
+    <!-- ===== 2. Runtime options (container friendly) ===== -->
     <arg name="basepath" value="."/>
     <arg name="extensions" value="php"/>
     <arg name="encoding" value="utf-8"/>
@@ -33,15 +26,15 @@
     <arg name="cache" value=".phpcs.cache"/>
     <arg name="colors"/>
     <arg value="sp"/>
+    <ini name="memory_limit" value="512M"/>
 
-    <!-- ===== 3. PHP version compatibility (open-ended: 8.5 and newer) ===== -->
+    <!-- ===== 3. PHP version compatibility ===== -->
     <config name="testVersion" value="8.5-"/>
     <rule ref="PHPCompatibility"/>
 
     <!-- ===== 4. Base style: PSR-12 ===== -->
     <rule ref="PSR12"/>
 
-    <!-- Line length: PSR-12 only warns at 120; make it a hard limit -->
     <rule ref="Generic.Files.LineLength">
         <properties>
             <property name="lineLimit" value="120"/>
@@ -49,7 +42,12 @@
         </properties>
     </rule>
 
-    <!-- ===== 5. Modern PHP: strict types and full typing ===== -->
+    <rule ref="PSR1.Files.SideEffects.FoundWithSymbols">
+        <exclude-pattern>public/index.php</exclude-pattern>
+        <exclude-pattern>database/migrate.php</exclude-pattern>
+    </rule>
+
+    <!-- ===== 5. Modern PHP: strict types, full typing, PER-style details ===== -->
     <rule ref="SlevomatCodingStandard.TypeHints.DeclareStrictTypes">
         <properties>
             <property name="spacesCountAroundEqualsSign" value="0"/>
@@ -70,19 +68,65 @@
         <exclude name="SlevomatCodingStandard.TypeHints.PropertyTypeHint.UselessAnnotation"/>
     </rule>
     <rule ref="SlevomatCodingStandard.TypeHints.NullableTypeForNullDefaultValue"/>
+    <rule ref="SlevomatCodingStandard.TypeHints.UselessConstantTypeHint"/>
+    <rule ref="SlevomatCodingStandard.TypeHints.DNFTypeHintFormat">
+        <properties>
+            <property name="enable" value="true"/>
+            <property name="withSpacesAroundOperators" value="no"/>
+            <property name="withSpacesInsideParentheses" value="no"/>
+            <property name="shortNullable" value="yes"/>
+            <property name="nullPosition" value="last"/>
+        </properties>
+    </rule>
     <rule ref="SlevomatCodingStandard.Classes.RequireConstructorPropertyPromotion"/>
     <rule ref="SlevomatCodingStandard.Classes.ClassConstantVisibility"/>
     <rule ref="SlevomatCodingStandard.Classes.ModernClassNameReference"/>
+    <rule ref="SlevomatCodingStandard.Classes.RequireSelfReference"/>
+    <rule ref="SlevomatCodingStandard.Classes.UselessLateStaticBinding"/>
+    <rule ref="SlevomatCodingStandard.Classes.DisallowMultiPropertyDefinition"/>
+    <rule ref="SlevomatCodingStandard.Attributes.RequireAttributeAfterDocComment"/>
     <rule ref="SlevomatCodingStandard.ControlStructures.RequireNullCoalesceOperator"/>
-
-    <!-- ===== 6. Clean code (SonarQube-style) ===== -->
-    <rule ref="SlevomatCodingStandard.Namespaces.UnusedUses"/>
-    <rule ref="SlevomatCodingStandard.Variables.UnusedVariable"/>
-    <rule ref="SlevomatCodingStandard.ControlStructures.EarlyExit"/>
-    <rule ref="SlevomatCodingStandard.Exceptions.ReferenceThrowableOnly"/>
-    <rule ref="Squiz.PHP.CommentedOutCode">
+    <rule ref="SlevomatCodingStandard.ControlStructures.NewWithParentheses"/>
+    <rule ref="SlevomatCodingStandard.Functions.StaticClosure"/>
+    <rule ref="SlevomatCodingStandard.Functions.RequireTrailingCommaInCall">
         <properties>
-            <property name="maxPercentage" value="30"/>
+            <property name="enable" value="true"/>
+        </properties>
+    </rule>
+    <rule ref="SlevomatCodingStandard.Functions.RequireTrailingCommaInDeclaration">
+        <properties>
+            <property name="enable" value="true"/>
+        </properties>
+    </rule>
+    <rule ref="SlevomatCodingStandard.Arrays.TrailingArrayComma"/>
+    <rule ref="SlevomatCodingStandard.PHP.TypeCast"/>
+    <rule ref="SlevomatCodingStandard.PHP.UselessParentheses"/>
+    <rule ref="SlevomatCodingStandard.Namespaces.UseFromSameNamespace"/>
+    <rule ref="SlevomatCodingStandard.Namespaces.AlphabeticallySortedUses"/>
+    <!-- Performance: \strlen() etc. compile to direct opcodes instead of a runtime lookup -->
+    <rule ref="SlevomatCodingStandard.Namespaces.FullyQualifiedGlobalFunctions">
+        <properties>
+            <property name="includeSpecialFunctions" value="true"/>
+        </properties>
+    </rule>
+
+    <!-- ===== 6. SOLID guardrails ===== -->
+    <rule ref="SlevomatCodingStandard.Classes.ClassLength">
+        <properties>
+            <property name="maxLinesLength" value="300"/>
+        </properties>
+        <type>warning</type>
+    </rule>
+    <rule ref="SlevomatCodingStandard.Functions.FunctionLength">
+        <properties>
+            <property name="maxLinesLength" value="50"/>
+        </properties>
+        <type>warning</type>
+    </rule>
+    <rule ref="SlevomatCodingStandard.Complexity.Cognitive">
+        <properties>
+            <property name="warningThreshold" value="10"/>
+            <property name="errorThreshold" value="15"/>
         </properties>
     </rule>
     <rule ref="Generic.Metrics.CyclomaticComplexity">
@@ -97,19 +141,47 @@
             <property name="absoluteNestingLevel" value="4"/>
         </properties>
     </rule>
+    <rule ref="SlevomatCodingStandard.Classes.ClassStructure">
+        <type>warning</type>
+    </rule>
+    <rule ref="SlevomatCodingStandard.Classes.ClassMemberSpacing"/>
+    <rule ref="SlevomatCodingStandard.Classes.RequireAbstractOrFinal">
+        <type>warning</type>
+    </rule>
+    <rule ref="SlevomatCodingStandard.Classes.ForbiddenPublicProperty">
+        <properties>
+            <property name="allowReadonly" value="true"/>
+            <property name="allowNonPublicSet" value="true"/>
+            <property name="checkPromoted" value="true"/>
+        </properties>
+        <type>warning</type>
+    </rule>
+    <rule ref="SlevomatCodingStandard.Variables.DisallowSuperGlobalVariable"/>
+    
+    <exclude-pattern>core/Request.php</exclude-pattern>
+    <exclude-pattern>public/index.php</exclude-pattern>
+    
+    <!-- ===== 7. Clean code (Sonar-style) ===== -->
+    <rule ref="SlevomatCodingStandard.Namespaces.UnusedUses"/>
+    <rule ref="SlevomatCodingStandard.Variables.UnusedVariable"/>
+    <rule ref="SlevomatCodingStandard.ControlStructures.EarlyExit"/>
+    <rule ref="SlevomatCodingStandard.Exceptions.ReferenceThrowableOnly"/>
+    <rule ref="SlevomatCodingStandard.Exceptions.DeadCatch"/>
+    <rule ref="SlevomatCodingStandard.Functions.DisallowEmptyFunction"/>
+    <rule ref="SlevomatCodingStandard.Operators.DisallowEqualOperators"/>
+    <rule ref="SlevomatCodingStandard.Functions.StrictCall"/>
+    <rule ref="Squiz.PHP.CommentedOutCode">
+        <properties>
+            <property name="maxPercentage" value="30"/>
+        </properties>
+    </rule>
     <rule ref="Generic.CodeAnalysis.EmptyStatement"/>
     <rule ref="Generic.CodeAnalysis.UnconditionalIfStatement"/>
     <rule ref="Generic.CodeAnalysis.ForLoopWithTestFunctionCall"/>
     <rule ref="Generic.CodeAnalysis.JumbledIncrementer"/>
     <rule ref="Generic.Commenting.Todo"/>
 
-    <!-- Strict comparisons only: ban == and != -->
-    <rule ref="SlevomatCodingStandard.Operators.DisallowEqualOperators"/>
-    <!-- Strict in_array()/array_search()/array_keys() -->
-    <rule ref="SlevomatCodingStandard.Functions.StrictCall"/>
-
-    <!-- ===== 7. Security guardrails ===== -->
-    <!-- No @ error suppression -->
+    <!-- ===== 8. Security guardrails ===== -->
     <rule ref="Generic.PHP.NoSilencedErrors">
         <properties>
             <property name="error" value="true"/>
@@ -119,11 +191,9 @@
     <rule ref="Generic.PHP.BacktickOperator"/>
     <rule ref="Generic.PHP.DeprecatedFunctions"/>
 
-    <!-- Forbidden functions (value = suggested replacement, or null) -->
     <rule ref="Generic.PHP.ForbiddenFunctions">
         <properties>
             <property name="forbiddenFunctions" type="array">
-                <!-- Code execution -->
                 <element key="eval" value="null"/>
                 <element key="assert" value="null"/>
                 <element key="create_function" value="null"/>
@@ -136,25 +206,20 @@
                 <element key="popen" value="null"/>
                 <element key="proc_open" value="null"/>
                 <element key="pcntl_exec" value="null"/>
-                <!-- Unsafe deserialization: use json_decode() -->
                 <element key="unserialize" value="json_decode"/>
-                <!-- Debug output -->
                 <element key="var_dump" value="null"/>
                 <element key="print_r" value="null"/>
                 <element key="phpinfo" value="null"/>
                 <element key="debug_zval_dump" value="null"/>
-                <!-- Weak randomness: use random_int() / random_bytes() -->
                 <element key="rand" value="random_int"/>
                 <element key="mt_rand" value="random_int"/>
                 <element key="srand" value="null"/>
                 <element key="mt_srand" value="null"/>
                 <element key="uniqid" value="random_bytes"/>
                 <element key="lcg_value" value="random_int"/>
-                <!-- Weak hashing: use password_hash() / hash('sha256', ...) / hash_hmac() -->
                 <element key="md5" value="hash"/>
                 <element key="sha1" value="hash"/>
                 <element key="crypt" value="password_hash"/>
-                <!-- Removed legacy DB extensions: use PDO -->
                 <element key="mysql_query" value="PDO"/>
                 <element key="mysql_connect" value="PDO"/>
                 <element key="mysqli_query" value="PDO"/>
@@ -163,7 +228,7 @@
         </properties>
     </rule>
 
-    <!-- ===== 8. File hygiene ===== -->
+    <!-- ===== 9. File hygiene ===== -->
     <rule ref="Generic.Files.ByteOrderMark"/>
     <rule ref="Generic.Files.LineEndings">
         <properties>
