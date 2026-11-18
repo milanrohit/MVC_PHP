@@ -4,17 +4,12 @@ declare(strict_types=1);
 
 namespace App\Helpers;
 
+use App\Exceptions\SqlHelperConnectionException;
 use Generator;
 use InvalidArgumentException;
 use PDO;
 use PDOStatement;
-use RuntimeException;
 use Throwable;
-
-/** Exception thrown when SqlHelper is used before a PDO connection is configured. */
-final class SqlHelperConnectionException extends RuntimeException
-{
-}
 
 /**
  * Single Responsibility Principle (SRP) helper for database interaction abstractions.
@@ -76,7 +71,7 @@ final class SqlHelper
         /** @var array<string, mixed>|false $result */
         $result = $stmt->fetch();
 
-        return is_array($result) ? $result : null;
+        return \is_array($result) ? $result : null;
     }
 
     /**
@@ -125,7 +120,7 @@ final class SqlHelper
         $quotedColumns = array_map(self::quoteIdentifier(...), $columns);
         $placeholders = array_map(static fn (string $col): string => ":{$col}", $columns);
 
-        $sql = sprintf(
+        $sql = \sprintf(
             'INSERT INTO %s (%s) VALUES (%s)',
             $safeTable,
             implode(', ', $quotedColumns),
@@ -164,7 +159,7 @@ final class SqlHelper
             $executeParams["update_{$column}"] = $value;
         }
 
-        $sql = sprintf(
+        $sql = \sprintf(
             'UPDATE %s SET %s WHERE %s',
             $safeTable,
             implode(', ', $assignments),
@@ -189,7 +184,7 @@ final class SqlHelper
         }
 
         $safeTable = self::quoteIdentifier($table);
-        $sql = sprintf('DELETE FROM %s WHERE %s', $safeTable, $where);
+        $sql = \sprintf('DELETE FROM %s WHERE %s', $safeTable, $where);
 
         $stmt = self::getPreparedStatement($sql);
         $stmt->execute($whereParams);
@@ -264,7 +259,7 @@ final class SqlHelper
     private static function getPdo(): PDO
     {
         if (self::$pdo === null) {
-            throw new SqlHelperConnectionException('SqlHelper connection has not been initialized. Call setConnection() first.');
+            throw new SqlHelperConnectionException();
         }
 
         return self::$pdo;
