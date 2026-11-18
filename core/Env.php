@@ -61,7 +61,7 @@ final class Env
         }
 
         $firstChar = $value[0];
-        if (($firstChar === '"' || $firstChar === "'") && strlen($value) >= 2 && str_ends_with($value, $firstChar)) {
+        if (($firstChar === '"' || $firstChar === "'") && \strlen($value) >= 2 && str_ends_with($value, $firstChar)) {
             return substr($value, 1, -1);
         }
 
