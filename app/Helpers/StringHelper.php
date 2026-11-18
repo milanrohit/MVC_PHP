@@ -4,178 +4,185 @@ declare(strict_types=1);
 
 namespace App\Helpers;
 
+use InvalidArgumentException;
+
 /**
- * SOLID Design: Single Responsibility Principle (SRP) for multi-byte safe string transformations.
- * Optimization: Monostate immutable implementation with zero object overhead and high-speed native operations.
+ * Static, multi-byte safe string helpers.
+ *
+ * Requires PHP 8.4+ (mb_ucfirst, mb_lcfirst) and the mbstring and iconv extensions.
  */
 final class StringHelper
 {
-    /**
-     * Instantiation is blocked to enforce pure utility architecture.
-     */
     private function __construct()
     {
     }
 
-    /**
-     * 1. Check if a string contains a specific substring.
-     */
     public static function contains(string $haystack, string $needle): bool
     {
-        return str_contains($haystack, $needle);
+        return \str_contains($haystack, $needle);
     }
 
-    /**
-     * 2. Check if a string starts with a specific substring.
-     */
     public static function startsWith(string $haystack, string $needle): bool
     {
-        return str_starts_with($haystack, $needle);
+        return \str_starts_with($haystack, $needle);
     }
 
-    /**
-     * 3. Check if a string ends with a specific substring.
-     */
     public static function endsWith(string $haystack, string $needle): bool
     {
-        return str_ends_with($haystack, $needle);
+        return \str_ends_with($haystack, $needle);
     }
 
-    /**
-     * 4. PHP 8.5.12 Optimized: Capitalize the first character of a string safely using multi-byte support.
-     */
     public static function ucfirst(string $string, string $encoding = 'UTF-8'): string
     {
-        return mb_ucfirst($string, $encoding);
+        return \mb_ucfirst($string, $encoding);
     }
 
-    /**
-     * 5. PHP 8.5.12 Optimized: Lowercase the first character of a string safely using multi-byte support.
-     */
     public static function lcfirst(string $string, string $encoding = 'UTF-8'): string
     {
-        return mb_lcfirst($string, $encoding);
+        return \mb_lcfirst($string, $encoding);
     }
 
     /**
-     * 6. Convert a string into a clean Title Case format.
+     * Title Case ("hello wORLD" -> "Hello World"). Lower-cases the rest of each word.
      */
     public static function title(string $string, string $encoding = 'UTF-8'): string
     {
-        return mb_convert_case($string, MB_CASE_TITLE, $encoding);
+        return \mb_convert_case($string, MB_CASE_TITLE, $encoding);
     }
 
-    /**
-     * 7. Safe multi-byte string length check.
-     */
     public static function length(string $string, string $encoding = 'UTF-8'): int
     {
-        return mb_strlen($string, $encoding);
+        return \mb_strlen($string, $encoding);
     }
 
     /**
-     * 8. Truncate text cleanly to a maximum length and append a suffix (e.g., for blogs or previews).
+     * Truncates to $limit characters and appends $end (the suffix is not counted in the limit).
      */
-    public static function limit(string $string, int $limit = 100, string $end = '...', string $encoding = 'UTF-8'): string
-    {
+    public static function limit(
+        string $string,
+        int $limit = 100,
+        string $end = '...',
+        string $encoding = 'UTF-8',
+    ): string {
+        $limit = \max(0, $limit);
+
         if (self::length($string, $encoding) <= $limit) {
             return $string;
         }
 
-        return mb_substr($string, 0, $limit, $encoding) . $end;
+        return \mb_substr($string, 0, $limit, $encoding) . $end;
     }
 
     /**
-     * 9. Convert text into a URL-friendly slug (e.g., "Hello World!" becomes "hello-world").
+     * URL-friendly slug ("Hello, World!" -> "hello-world", "Café Ñandú" -> "cafe-nandu").
+     * Runs of anything other than letters and digits (including "-" and "_") become one separator.
+     * Transliteration uses iconv; on musl-based images (Alpine) accents may not transliterate.
      */
     public static function slug(string $string, string $separator = '-'): string
     {
-        // Transliterate non-ascii characters to ascii equivalents
-        $string = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $string);
+        $ascii = \iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $string);
+        $words = \preg_split('/[^a-z0-9]+/', \strtolower($ascii === false ? $string : $ascii), -1, PREG_SPLIT_NO_EMPTY);
 
-        // Remove everything except alphanumeric symbols and spaces
-        $string = preg_replace('/[^a-zA-Z0-9\s]/', '', $string);
-
-        // Lowercase and swap spaces for separators
-        return preg_replace('/\s+/', $separator, trim(mb_strtolower($string, 'UTF-8')));
+        return \implode($separator, $words === false ? [] : $words);
     }
 
     /**
-     * 10. Generate a cryptographically secure, random alphanumeric string.
+     * Cryptographically secure random hexadecimal string of exactly $length characters.
      */
     public static function random(int $length = 16): string
     {
-        return bin2hex(random_bytes($length / 2));
+        if ($length < 1) {
+            throw new InvalidArgumentException('Length must be at least 1.');
+        }
+
+        return \substr(\bin2hex(\random_bytes(\intdiv($length + 1, 2))), 0, $length);
     }
 
     /**
-     * 11. Convert a string to camelCase (e.g., "user_profile_data" -> "userProfileData").
+     * "user_profile_data" -> "userProfileData". Existing capitals inside words are kept.
      */
     public static function camel(string $value): string
     {
-        $value = self::title(str_replace(['-', '_'], ' ', $value));
-        return self::lcfirst(str_replace(' ', '', $value));
+        $words = \preg_split('/[\s_-]+/u', $value, -1, PREG_SPLIT_NO_EMPTY);
+
+        if ($words === false) {
+            throw new InvalidArgumentException('Input is not valid UTF-8.');
+        }
+
+        return self::lcfirst(\implode('', \array_map(self::ucfirst(...), $words)));
     }
 
     /**
-     * 12. Convert a string to snake_case (e.g., "userProfileData" -> "user_profile_data").
+     * "userProfileData" or "user profile data" -> "user_profile_data".
      */
     public static function snake(string $value, string $delimiter = '_'): string
     {
-        $value = preg_replace('/\s+/u', '', $value);
-        $value = preg_replace('/(.)(?=[A-Z])/u', '$1' . $delimiter, $value);
-        return mb_strtolower($value, 'UTF-8');
+        $value = self::regexReplace('/\s+/u', '', \ucwords($value));
+        $value = self::regexReplace('/(.)(?=\p{Lu})/u', '$1' . \addcslashes($delimiter, '\\$'), $value);
+
+        return \mb_strtolower($value, 'UTF-8');
     }
 
     /**
-     * 13. Mask a portion of a string (e.g., hiding credit card or email segments).
+     * Masks part of a string, e.g. mask('4111111111111111', '*', 0, 12) -> '************1111'.
+     * A negative $index counts from the end; a negative $length stops that many characters before the end.
      */
-    public static function mask(string $string, string $character, int $index, ?int $length = null, string $encoding = 'UTF-8'): string
-    {
+    public static function mask(
+        string $string,
+        string $character,
+        int $index,
+        ?int $length = null,
+        string $encoding = 'UTF-8',
+    ): string {
         if ($character === '') {
             return $string;
         }
 
-        $segmentLength = self::length($string, $encoding);
+        $total = self::length($string, $encoding);
+        $index = $index < 0 ? \max(0, $total + $index) : \min($index, $total);
 
-        if ($index < 0) {
-            $index = max(0, $segmentLength + $index);
-        }
-
-        if ($length === null) {
-            $length = $segmentLength - $index;
-        } elseif ($length < 0) {
-            $length = max(0, $segmentLength + $length - $index);
-        }
+        $length = match (true) {
+            $length === null => $total - $index,
+            $length < 0 => \max(0, $total + $length - $index),
+            default => \min($length, $total - $index),
+        };
 
         if ($length === 0) {
             return $string;
         }
 
-        $start = mb_substr($string, 0, $index, $encoding);
-        $mask = str_repeat($character, $length);
-        $end = mb_substr($string, $index + $length, $segmentLength, $encoding);
-
-        return $start . $mask . $end;
+        return \mb_substr($string, 0, $index, $encoding)
+            . \str_repeat($character, $length)
+            . \mb_substr($string, $index + $length, null, $encoding);
     }
 
-    /**
-     * 14. Safely wrap a string value within another string boundaries.
-     */
     public static function wrap(string $value, string $before, ?string $after = null): string
     {
         return $before . $value . ($after ?? $before);
     }
 
     /**
-     * 15. Extract everything found after the first occurrence of a specific value.
+     * Everything after the first occurrence of $search; the whole string if it is not found.
      */
     public static function after(string $subject, string $search): string
     {
         if ($search === '') {
             return $subject;
         }
-        $parts = explode($search, $subject, 2);
-        return \array_key_exists(1, $parts) ? $parts[1] : $subject;
+
+        $position = \strpos($subject, $search);
+
+        return $position === false ? $subject : \substr($subject, $position + \strlen($search));
+    }
+
+    private static function regexReplace(string $pattern, string $replacement, string $subject): string
+    {
+        $result = \preg_replace($pattern, $replacement, $subject);
+
+        if ($result === null) {
+            throw new InvalidArgumentException('Input is not valid UTF-8.');
+        }
+
+        return $result;
     }
 }

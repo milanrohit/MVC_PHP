@@ -13,8 +13,8 @@ use Throwable;
 
 final class Application
 {
-    public readonly Container $container;
-    public static ?Request $request = null;
+    private readonly Container $container;
+    private static ?Request $request = null;
 
     public function __construct(private readonly string $basePath)
     {
@@ -22,6 +22,16 @@ final class Application
         Config::load($basePath . '/config');
         $this->container = new Container();
         $this->registerBindings();
+    }
+
+    public function getContainer(): Container
+    {
+        return $this->container;
+    }
+
+    public static function getRequest(): ?Request
+    {
+        return self::$request;
     }
 
     public function run(): void
@@ -33,7 +43,8 @@ final class Application
         $handler = new ExceptionHandler($debug, $this->basePath . '/storage/logs');
         $handler->register();
 
-        $request = self::$request = Request::capture();
+        $request = Request::capture();
+        self::$request = $request;
 
         try {
             Session::start();
@@ -41,7 +52,7 @@ final class Application
             $router = new Router($this->container);
             $router->middleware(SecurityHeaders::class);
             $router->middleware(CsrfMiddleware::class);
-            require_once $this->basePath . '/routes/web.php';
+            require $this->basePath . '/routes/web.php';
 
             $router->dispatch($request)->send();
         } catch (Throwable $e) {
@@ -51,8 +62,8 @@ final class Application
 
     private function registerBindings(): void
     {
-        $c = $this->container;
-        $c->singleton(PDO::class, static fn () => Database::connection());
-        $c->bind(UserRepositoryInterface::class, UserRepository::class);
+        $container = $this->container;
+        $container->singleton(PDO::class, static fn (): PDO => Database::connection());
+        $container->bind(UserRepositoryInterface::class, UserRepository::class);
     }
 }
