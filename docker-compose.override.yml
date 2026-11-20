@@ -1,0 +1,32 @@
+# Development-only settings. Loaded automatically by `docker compose up`.
+# Requires Docker Compose 2.24+ (uses the !override tag).
+#
+# WARNING: this weakens the hardening on purpose:
+#   - the project folder is bind-mounted over /var/www/html (code becomes writable)
+#   - custom_dev.ini loads last and can turn allow_url_fopen / display_errors back on
+# Never use this file to verify or ship the hardened setup.
+
+services:
+  app:
+    # Replace the base volumes (storage volume) instead of nesting under the bind mount
+    volumes: !override
+      - .:/var/www/html
+      - ./docker/apache/custom_dev.ini:/usr/local/etc/php/conf.d/custom_dev.ini:ro
+
+  db:
+    ports:
+      # Host access for GUI tools; localhost only (XAMPP MySQL stays on 3306)
+      - "127.0.0.1:${DB_FORWARD_PORT:-3309}:3306"
+
+  phpmyadmin:
+    # Pin to a tag you have verified on Docker Hub instead of :latest
+    image: phpmyadmin:5.2
+    container_name: mvc_phpmyadmin
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8084:80"
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+    depends_on:
+      - db
