@@ -6,3 +6,13 @@ storage/logs/*
 .idea/
 .vscode/
 phpcs-report.txt
+.env
+
+# Local build & diagnostic artefacts
+phpinfo.txt
+*.log
+phpcs-report.txt
+.phpcs.cache
+project_structure*.txt
+MVC_INFO.txt
+github_readme.md
