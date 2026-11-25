@@ -61,6 +61,13 @@ RUN composer dump-autoload --no-dev --classmap-authoritative --no-scripts \
 # ==========================================
 FROM base AS production
 
+ENV APACHE_RUN_DIR=/tmp/apache2 \
+    APACHE_RUN_USER=www-data \
+    APACHE_RUN_GROUP=www-data \
+    APACHE_PID_FILE=/tmp/apache2/apache2.pid \
+    APACHE_LOCK_DIR=/tmp/apache2 \
+    APACHE_LOG_DIR=/tmp/apache2
+
 LABEL org.opencontainers.image.title="app" \
     org.opencontainers.image.vendor="company" \
     org.opencontainers.image.authors="infrastructure-team@company.com"
@@ -71,15 +78,21 @@ WORKDIR /var/www/html
 COPY --from=vendor /app /var/www/html
 
 RUN set -eux; \
+    sed -i 's/Listen 80/Listen 8080/' /etc/apache2/ports.conf; \
+    sed -i 's/<VirtualHost \*:80>/<VirtualHost *:8080>/' /etc/apache2/sites-available/000-default.conf; \
     find /var/www/html -type d -exec chmod 755 {} +; \
     find /var/www/html -type f -exec chmod 644 {} +; \
     mkdir -p /var/www/html/storage; \
     chown -R www-data:www-data /var/www/html/storage; \
-    chmod -R 750 /var/www/html/storage
+    chmod -R 750 /var/www/html/storage; \
+    mkdir -p "$APACHE_RUN_DIR"; \
+    chown www-data:www-data "$APACHE_RUN_DIR"
 
-EXPOSE 80
+USER www-data
+
+EXPOSE 8080
 
 HEALTHCHECK --interval=20s --timeout=4s --start-period=15s --retries=3 \
-    CMD curl -fsS http://localhost/healthz || exit 1
+    CMD curl -fsS http://localhost:8080/healthz || exit 1
 
-# Apache starts as root only to bind port 80; workers run as www-data (see User/Group in apache2.conf)
+# Apache and PHP run as www-data; port 8080 does not require root privileges.
