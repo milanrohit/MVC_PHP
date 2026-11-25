@@ -97,6 +97,7 @@ function seedOrdersAndDetails(\PDO $pdo): void
         $orderTotal = 0;
 
         for ($item = 0; $item < $itemsInOrder; $item++) {
+            // FIX: Connect only to valid product IDs (1 to 100)
             $productId = random_int(1, 100);
             $qty = random_int(1, 10);
             $unitPrice = random_int(999, 15000);
@@ -166,19 +167,18 @@ function runDatabaseSeeder(): void
         echo "  \033[32m✔\033[0m \033[37mInserted order details and calculated header totals successfully.\033[0m" . PHP_EOL;
         echo PHP_EOL . "\033[42m\033[30m SUCCESS \033[0m All database tables are seeded precisely using schema column mappings." . PHP_EOL . PHP_EOL;
 
-    } catch (\Throwable $e) {
-        // Safe validation fallback structures
-        if ($pdo !== null) {
-            if ($pdo->inTransaction()) {
-                $pdo->rollBack();
-            }
-            $pdo->exec($setFkCheck1);
-        }
-
-        echo PHP_EOL . "\033[41m\033[37m ERROR \033[0m Seeding Processing Failure: " . $e->getMessage() . PHP_EOL . PHP_EOL;
-        exit(1);
+} catch (\PDOException $e) {
+    if (isset($pdo) && $pdo->inTransaction()) {
+        $pdo->rollBack();
     }
+    $pdo->exec($set_frk_chk .'= 1;');
+    echo PHP_EOL . "\033[41m\033[37m ERROR \033[0m Docker DB Connection/Query Failure: " . $e->getMessage() . PHP_EOL . PHP_EOL;
+    exit(1);
+} catch (\Throwable $e) {
+    if (isset($pdo) && $pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
+    $pdo->exec($set_frk_chk .'= 1;');
+    echo PHP_EOL . "\033[41m\033[37m ERROR \033[0m Fatal Processing Error: " . $e->getMessage() . PHP_EOL . PHP_EOL;
+    exit(1);
 }
-
-// Run the script
-runDatabaseSeeder();
