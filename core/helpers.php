@@ -14,7 +14,7 @@ if (!function_exists('e')) {
 if (!function_exists('base_path_url')) {
     function base_path_url(): string
     {
-        return Core\Application::$request?->basePath() ?? '';
+        return Core\Application::getRequest()?->basePath() ?? '';
     }
 }
 

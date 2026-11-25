@@ -68,13 +68,13 @@ fi
 echo
 echo "== 3. Runtime hardening tests =="
 
-out=$(run php -r 'system("id");' 2>&1)
+out=$(run php -d display_errors=1 -r 'system("id");' 2>&1)
 echo "$out" | grep -q "undefined function system" && ok "system() is disabled" || bad "system() still available: $out"
 
-out=$(run php -r 'echo `id`;' 2>&1)
+out=$(run php -d display_errors=1 -r 'echo `id`;' 2>&1)
 echo "$out" | grep -q "undefined function shell_exec" && ok "backtick/shell_exec is disabled" || bad "backtick still works: $out"
 
-out=$(run php -r 'readfile("/etc/passwd");' 2>&1)
+out=$(run php -d display_errors=1 -r 'readfile("/etc/passwd");' 2>&1)
 echo "$out" | grep -q "open_basedir" && ok "open_basedir blocks /etc/passwd" || bad "/etc/passwd readable: $out"
 
 out=$(run php -r 'echo ini_get("allow_url_fopen") ? "ON" : "OFF";' 2>&1)
