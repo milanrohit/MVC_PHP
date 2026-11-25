@@ -16,3 +16,14 @@ phpcs-report.txt
 project_structure*.txt
 MVC_INFO.txt
 github_readme.md
+
+# Structure dumps, info notes & diagnostic artefacts
+*structure*.txt
+tree.txt
+MVC_INFO.txt
+github_readme.md
+phpinfo.txt
+phpcs-report.txt
+.phpcs.cache
+*.log
+!storage/logs/.gitkeep
