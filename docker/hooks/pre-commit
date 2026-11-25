@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -e
+
+echo "Running security & quality pre-commit checks..."
+
+# 1. Block sensitive/diagnostic files from being staged
+FORBIDDEN_FILES=$(git diff --cached --name-only | grep -E '(^\.env$|phpinfo\.txt|\.log$|\.cache$)' || true)
+if [ -n "$FORBIDDEN_FILES" ]; then
+    echo "ERROR: Forbidden sensitive or diagnostic files staged:"
+    echo "$FORBIDDEN_FILES"
+    exit 1
+fi
+
+# 2. Scan staged changes for secrets using Gitleaks via Docker
+MSYS_NO_PATHCONV=1 docker run --rm -v "$(pwd):/repo" zricethezav/gitleaks:latest protect --staged --source="/repo" --verbose
+
+# 3. Run PHP_CodeSniffer via your existing tools container
+docker compose -f docker-compose.tools.yml run --rm tools vendor/bin/phpcs --standard=phpcs.xml --no-cache
+
+echo "All pre-commit checks passed!"
