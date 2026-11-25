@@ -25,17 +25,19 @@ final class Env
         }
     }
 
-    public static function get(string $key, ?string $default = null): ?string
+    public static function get(string $key, mixed $default = null): mixed
     {
-        // Real environment (Docker) wins over .env file (XAMPP)
-        $real = getenv($key);
-        if ($real !== false && $real !== '') {
-            return $real;
+        if (\array_key_exists($key, self::$vars)) {
+            return self::$vars[$key];
         }
 
-        $value = self::$vars[$key] ?? null;
+        $value = getenv($key);
 
-        return $value === null || $value === '' ? $default : $value;
+        if ($value === false) {
+            return $default;
+        }
+
+        return $value;
     }
 
     private static function parseLine(string $rawLine): void
