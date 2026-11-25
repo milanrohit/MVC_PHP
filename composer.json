@@ -10,5 +10,16 @@
     "config": { "optimize-autoloader": true, "sort-packages": true },
     "require-dev": {
         "squizlabs/php_codesniffer": "*"
+    },
+    "scripts": {
+        "stan": "phpstan analyse src app --level=8",
+        "lint": "pint --test",
+        "audit": "composer audit --locked",
+        "check": [
+        "@lint",
+        "@stan",
+        "@audit"
+        ]
     }
 }
+

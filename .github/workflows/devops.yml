@@ -1,0 +1,37 @@
+name: PHP DevOps Pipeline
+
+on:
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  security-and-quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP 8.6
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.6"
+          tools: composer, phpstan
+
+      - name: Install Dependencies
+        run: composer install --prefer-dist --no-progress --no-interaction
+
+      - name: Dependency Vulnerability Scan
+        run: composer audit --locked
+
+      - name: Static Analysis (PHPStan Level 8)
+        run: vendor/bin/phpstan analyse --level=8
+
+      - name: Automated Upgrade & Quality Check (Rector)
+        run: vendor/bin/rector process --dry-run
+
+      - name: SAST Scan (Semgrep OWASP PHP)
+        uses: semgrep/semgrep-action@v1
+        with:
+          config: >-
+            p/php
+            p/owasp-top-ten
+            p/secrets

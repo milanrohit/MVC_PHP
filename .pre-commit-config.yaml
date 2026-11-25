@@ -1,0 +1,20 @@
+repos:
+  - repo: https://github.com
+    rev: v8.21.2
+    hooks:
+      - id: gitleaks
+
+  - repo: local
+    hooks:
+      - id: block-sensitive-artefacts
+        name: Block phpinfo, logs, and .env files
+        entry: "Security Policy: Do not commit .env, phpinfo.txt, or *.log files."
+        language: fail
+        files: '(^\.env$|phpinfo\.txt|\.log$|\.cache$)'
+
+      - id: phpcs-check
+        name: PHP_CodeSniffer (PSR-12)
+        entry: docker compose -f docker-compose.tools.yml run --rm tools vendor/bin/phpcs --standard=phpcs.xml
+        language: system
+        types: [php]
+        pass_filenames: false

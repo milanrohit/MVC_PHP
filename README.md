@@ -37,17 +37,17 @@ A custom, dependency-light PHP MVC application framework with a hardened contain
 
 ## 2. Technology Stack
 
-| Layer | Technology | Notes |
-| :--- | :--- | :--- |
-| Language | PHP 8.6 (pinned `8.6.0`) | `declare(strict_types=1)` throughout |
-| Web server | Apache 2.4 (official `php:8.6.0-apache` image) | Non-root, listens on **8080** in the container |
-| Database | MySQL 8.4 via PDO | Singleton factory in `core/Database.php` |
-| Dependencies | Composer 2, PSR-4 autoloading | Composer is **not** shipped in the production image |
-| Frontend build | Vite, PostCSS / Tailwind CSS, Vue single-file components as islands | Output in `public/build/` |
-| Containers | Docker, Docker Compose **2.24+** | The dev override uses the `!override` tag |
-| Quality | PHP_CodeSniffer (`phpcs.xml`), SonarQube (`sonar-project.properties`) | |
-| CI | GitHub Actions (`.github/workflows/ci.yml`) | |
-| Security | `security_php2shell.ini`, Apache hardening, CSRF and security-header middleware | See [section 8](#8-security-hardening) |
+| Layer          | Technology                                                                      | Notes                                               |
+| :------------- | :------------------------------------------------------------------------------ | :-------------------------------------------------- |
+| Language       | PHP 8.6 (pinned `8.6.0`)                                                        | `declare(strict_types=1)` throughout                |
+| Web server     | Apache 2.4 (official `php:8.6.0-apache` image)                                  | Non-root, listens on **8080** in the container      |
+| Database       | MySQL 8.4 via PDO                                                               | Singleton factory in `core/Database.php`            |
+| Dependencies   | Composer 2, PSR-4 autoloading                                                   | Composer is **not** shipped in the production image |
+| Frontend build | Vite, PostCSS / Tailwind CSS, Vue single-file components as islands             | Output in `public/build/`                           |
+| Containers     | Docker, Docker Compose **2.24+**                                                | The dev override uses the `!override` tag           |
+| Quality        | PHP_CodeSniffer (`phpcs.xml`), SonarQube (`sonar-project.properties`)           |                                                     |
+| CI             | GitHub Actions (`.github/workflows/ci.yml`)                                     |                                                     |
+| Security       | `security_php2shell.ini`, Apache hardening, CSRF and security-header middleware | See [section 8](#8-security-hardening)              |
 
 ---
 
@@ -69,19 +69,19 @@ Browser -> Apache (public/ document root, .htaccess rewrite)
 
 ### 3.2 Layer responsibilities
 
-| Layer | Path | Responsibility |
-| :--- | :--- | :--- |
-| Core engine | `core/` | Container, Router, Request/Response, Session, CSRF, View, Database, Migrator, Env, exception handling |
-| Context modules | `app/Frontend/`, `app/Backend/` | Each context owns its `Controllers/`, `Models/` and `Views/` (`home/`, `layouts/`). Strict boundary between the public and admin contexts |
-| Middleware | `app/Middleware/` | Cross-cutting request/response interceptors (`CsrfMiddleware`, `SecurityHeaders`) |
-| Services | `app/Services/` | Shared business logic (`UserService`) |
-| Repositories | `app/Repositories/` | Data-access abstraction; interfaces in `Contracts/` |
-| Shared models | `app/Models/` | Models used by both contexts (`User`) |
-| Helpers | `app/Helpers/` | Static utilities: `ArrayHelper`, `StringHelper`, `ValidatorHelper`, `SqlHelper`, `ConstantHelper`, `DebugHelper` |
-| Exceptions | `app/Exceptions/` | Typed application exceptions: `AppException` plus Authentication, Authorization, Conflict, Domain, NotFound, Runtime, SqlHelperConnection and Validation exceptions |
-| Support | `app/Support/` | `DatabaseSeeder`, `Validator` |
-| Database | `database/` | `migrate.php` runner and numbered SQL migrations |
-| Config | `config/` | Immutable configuration manifests (`app.php`, `database.php`) |
+| Layer           | Path                            | Responsibility                                                                                                                                                      |
+| :-------------- | :------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Core engine     | `core/`                         | Container, Router, Request/Response, Session, CSRF, View, Database, Migrator, Env, exception handling                                                               |
+| Context modules | `app/Frontend/`, `app/Backend/` | Each context owns its `Controllers/`, `Models/` and `Views/` (`home/`, `layouts/`). Strict boundary between the public and admin contexts                           |
+| Middleware      | `app/Middleware/`               | Cross-cutting request/response interceptors (`CsrfMiddleware`, `SecurityHeaders`)                                                                                   |
+| Services        | `app/Services/`                 | Shared business logic (`UserService`)                                                                                                                               |
+| Repositories    | `app/Repositories/`             | Data-access abstraction; interfaces in `Contracts/`                                                                                                                 |
+| Shared models   | `app/Models/`                   | Models used by both contexts (`User`)                                                                                                                               |
+| Helpers         | `app/Helpers/`                  | Static utilities: `ArrayHelper`, `StringHelper`, `ValidatorHelper`, `SqlHelper`, `ConstantHelper`, `DebugHelper`                                                    |
+| Exceptions      | `app/Exceptions/`               | Typed application exceptions: `AppException` plus Authentication, Authorization, Conflict, Domain, NotFound, Runtime, SqlHelperConnection and Validation exceptions |
+| Support         | `app/Support/`                  | `DatabaseSeeder`, `Validator`                                                                                                                                       |
+| Database        | `database/`                     | `migrate.php` runner and numbered SQL migrations                                                                                                                    |
+| Config          | `config/`                       | Immutable configuration manifests (`app.php`, `database.php`)                                                                                                       |
 
 ### 3.3 Project structure
 
@@ -149,33 +149,33 @@ MVC_PHP/
 
 ### 3.4 PSR-4 namespaces
 
-| File path | Namespace |
-| :--- | :--- |
-| `app/Backend/Controllers/HomeController.php` | `App\Backend\Controllers` |
-| `app/Frontend/Controllers/HomeController.php` | `App\Frontend\Controllers` |
-| `app/Backend/Models/*`, `app/Frontend/Models/*` | `App\Backend\Models`, `App\Frontend\Models` |
-| `app/Exceptions/*` | `App\Exceptions` |
-| `app/Helpers/*` | `App\Helpers` |
-| `app/Middleware/CsrfMiddleware.php` | `App\Middleware` |
-| `app/Models/User.php` | `App\Models` |
-| `app/Repositories/UserRepository.php` | `App\Repositories` |
-| `app/Repositories/Contracts/UserRepositoryInterface.php` | `App\Repositories\Contracts` |
-| `app/Services/UserService.php` | `App\Services` |
-| `app/Support/*` | `App\Support` |
-| `core/Application.php` | `Core` |
+| File path                                                | Namespace                                   |
+| :------------------------------------------------------- | :------------------------------------------ |
+| `app/Backend/Controllers/HomeController.php`             | `App\Backend\Controllers`                   |
+| `app/Frontend/Controllers/HomeController.php`            | `App\Frontend\Controllers`                  |
+| `app/Backend/Models/*`, `app/Frontend/Models/*`          | `App\Backend\Models`, `App\Frontend\Models` |
+| `app/Exceptions/*`                                       | `App\Exceptions`                            |
+| `app/Helpers/*`                                          | `App\Helpers`                               |
+| `app/Middleware/CsrfMiddleware.php`                      | `App\Middleware`                            |
+| `app/Models/User.php`                                    | `App\Models`                                |
+| `app/Repositories/UserRepository.php`                    | `App\Repositories`                          |
+| `app/Repositories/Contracts/UserRepositoryInterface.php` | `App\Repositories\Contracts`                |
+| `app/Services/UserService.php`                           | `App\Services`                              |
+| `app/Support/*`                                          | `App\Support`                               |
+| `core/Application.php`                                   | `Core`                                      |
 
 ### 3.5 Database migrations
 
 Run with `php database/migrate.php`. Migrations are plain numbered SQL files applied in order:
 
-| File | Purpose |
-| :--- | :--- |
-| `000_create_db.sql` | Creates the database |
-| `001_create_user_master.sql` | Users |
-| `002_create_categorie_master.sql` | Product categories |
-| `003_create_product_master.sql` | Products |
-| `004_create_order_master.sql` | Orders |
-| `005_create_order_detail.sql` | Order lines |
+| File                              | Purpose              |
+| :-------------------------------- | :------------------- |
+| `000_create_db.sql`               | Creates the database |
+| `001_create_user_master.sql`      | Users                |
+| `002_create_categorie_master.sql` | Product categories   |
+| `003_create_product_master.sql`   | Products             |
+| `004_create_order_master.sql`     | Orders               |
+| `005_create_order_detail.sql`     | Order lines          |
 
 Seeding (`app/Support/DatabaseSeeder.php`, started through `runseeder.php`) is for development data only. Never run it against a production database.
 
@@ -185,32 +185,32 @@ Seeding (`app/Support/DatabaseSeeder.php`, started through `runseeder.php`) is f
 
 ### 4.1 Two modes
 
-| | Hardened (production-like) | Development |
-| :--- | :--- | :--- |
-| Compose files | `docker-compose.yml` only | `docker-compose.yml` + `docker-compose.override.yml` (automatic) |
-| Application code | Baked into the image, **root-owned, read-only** | Bind-mounted from the host (**writable**) |
-| Writable path | `storage/` (named volume) only | Whole project folder |
-| PHP settings | `security_php2shell.ini` in effect | `custom_dev.ini` loads **last** and can relax settings |
-| MySQL port | Not published | `127.0.0.1:3309` |
-| phpMyAdmin | Not deployed | `127.0.0.1:8084` |
-| Command | `docker compose -f docker-compose.yml up -d --build` | `docker compose up -d --build` |
+|                  | Hardened (production-like)                           | Development                                                      |
+| :--------------- | :--------------------------------------------------- | :--------------------------------------------------------------- |
+| Compose files    | `docker-compose.yml` only                            | `docker-compose.yml` + `docker-compose.override.yml` (automatic) |
+| Application code | Baked into the image, **root-owned, read-only**      | Bind-mounted from the host (**writable**)                        |
+| Writable path    | `storage/` (named volume) only                       | Whole project folder                                             |
+| PHP settings     | `security_php2shell.ini` in effect                   | `custom_dev.ini` loads **last** and can relax settings           |
+| MySQL port       | Not published                                        | `127.0.0.1:3309`                                                 |
+| phpMyAdmin       | Not deployed                                         | `127.0.0.1:8084`                                                 |
+| Command          | `docker compose -f docker-compose.yml up -d --build` | `docker compose up -d --build`                                   |
 
 > The development mode deliberately weakens the hardening. Never use it to validate or ship a release; use the hardened mode and `apply-and-verify.sh`.
 
 ### 4.2 Compose files
 
-| File | Purpose |
-| :--- | :--- |
-| `docker-compose.yml` | Hardened base: `app` (non-root, `cap_drop: ALL`, `no-new-privileges`, port `127.0.0.1:${APP_PORT}:8080`) and `db` (internal only) |
-| `docker-compose.override.yml` | Dev only: bind mount, `custom_dev.ini`, MySQL host port, phpMyAdmin |
-| `docker-compose.tools.yml` | Separate `mvc_tools` project: Composer and QA tools. Its `vendor/` lives in a named volume and never touches the host or the app |
+| File                          | Purpose                                                                                                                           |
+| :---------------------------- | :-------------------------------------------------------------------------------------------------------------------------------- |
+| `docker-compose.yml`          | Hardened base: `app` (non-root, `cap_drop: ALL`, `no-new-privileges`, port `127.0.0.1:${APP_PORT}:8080`) and `db` (internal only) |
+| `docker-compose.override.yml` | Dev only: bind mount, `custom_dev.ini`, MySQL host port, phpMyAdmin                                                               |
+| `docker-compose.tools.yml`    | Separate `mvc_tools` project: Composer and QA tools. Its `vendor/` lives in a named volume and never touches the host or the app  |
 
 ### 4.3 Dockerfile stages (`docker/php/Dockerfile`)
 
-| Stage | Purpose |
-| :--- | :--- |
-| `base` | Official `php:<version>-apache` image, extensions, Apache hardening, OPcache and vhost config. **Does not** include the hardening ini |
-| `vendor` | Composer, git and unzip live here only. Runs `composer install --no-dev` and `dump-autoload --classmap-authoritative` |
+| Stage        | Purpose                                                                                                                                                      |
+| :----------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `base`       | Official `php:<version>-apache` image, extensions, Apache hardening, OPcache and vhost config. **Does not** include the hardening ini                        |
+| `vendor`     | Composer, git and unzip live here only. Runs `composer install --no-dev` and `dump-autoload --classmap-authoritative`                                        |
 | `production` | Adds `security_php2shell.ini`, copies code from `vendor`, root-owned code, writable `storage/`, runs as `www-data` on port 8080, `HEALTHCHECK` on `/healthz` |
 
 The hardening ini must stay in the `production` stage only: `open_basedir` and `disable_functions` would otherwise break Composer in the `vendor` stage.
@@ -219,11 +219,11 @@ Compose builds only `docker/php/Dockerfile`. A legacy `Dockerfile` in the projec
 
 ### 4.4 Local endpoints
 
-| URL / address | Service | Purpose |
-| :--- | :--- | :--- |
+| URL / address            | Service                             | Purpose                                              |
+| :----------------------- | :---------------------------------- | :--------------------------------------------------- |
 | `http://localhost:8088/` | `app` (Apache, container port 8080) | Application. Port set by `APP_PORT` (default `8088`) |
-| `http://localhost:8084/` | `phpmyadmin` (dev only) | Database GUI |
-| `127.0.0.1:3309` | `db` (dev only) | External DB clients (TablePlus, DBeaver) |
+| `http://localhost:8084/` | `phpmyadmin` (dev only)             | Database GUI                                         |
+| `127.0.0.1:3309`         | `db` (dev only)                     | External DB clients (TablePlus, DBeaver)             |
 
 ---
 
@@ -253,13 +253,13 @@ Open `http://localhost:8088/`.
 
 Settings come from environment variables. **The real environment (Docker) wins over the `.env` file (XAMPP).**
 
-| Variable | Default | Description |
-| :--- | :--- | :--- |
+| Variable           | Default            | Description                                                                                                         |
+| :----------------- | :----------------- | :------------------------------------------------------------------------------------------------------------------ |
 | `DB_ROOT_PASSWORD` | none, **required** | MySQL root password. Compose refuses to start without it. MySQL only reads it when the data volume is first created |
-| `DB_DATABASE` | `mvc_app` | Database name |
-| `DB_USERNAME` | `root` | Application DB user. Use a dedicated least-privilege user for any real deployment |
-| `APP_PORT` | `8088` | Host port mapped to Apache's 8080 |
-| `DB_FORWARD_PORT` | `3309` | Host port for MySQL (dev override only) |
+| `DB_DATABASE`      | `mvc_app`          | Database name                                                                                                       |
+| `DB_USERNAME`      | `root`             | Application DB user. Use a dedicated least-privilege user for any real deployment                                   |
+| `APP_PORT`         | `8088`             | Host port mapped to Apache's 8080                                                                                   |
+| `DB_FORWARD_PORT`  | `3309`             | Host port for MySQL (dev override only)                                                                             |
 
 `DB_HOST` and `DB_PORT` are set by Compose (`db` and `3306`).
 
@@ -271,21 +271,21 @@ Never commit `.env`. It is excluded from the Docker build context.
 
 ## 7. Operations Playbook
 
-| Task | Command |
-| :--- | :--- |
-| Start (dev) | `docker compose up -d --build` |
-| Stop | `docker compose down` |
-| Follow logs | `docker compose logs -f app` |
-| PHP error log | `docker compose exec app tail -n 50 /var/www/html/storage/logs/php-error.log` |
-| Shell in the app container | `docker compose exec app bash` |
-| Run migrations | `docker compose exec app php database/migrate.php` |
-| Seed development data | `docker compose exec app php runseeder.php` (never in production) |
-| Refresh the autoloader | `composer dump-autoload -o` (on the host) |
-| Database shell | `docker compose exec db sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" "$MYSQL_DATABASE"'` |
-| Run a tool in the tooling container | `docker compose -f docker-compose.tools.yml run --rm tools <command>` |
-| Verify the hardened build | `bash apply-and-verify.sh` (add `QUICK=1` to reuse the build cache) |
-| Return to dev after verifying | `docker compose up -d --force-recreate` |
-| Full reset (**deletes database data**) | `docker compose down --volumes && docker compose up -d --build` |
+| Task                                   | Command                                                                                  |
+| :------------------------------------- | :--------------------------------------------------------------------------------------- |
+| Start (dev)                            | `docker compose up -d --build`                                                           |
+| Stop                                   | `docker compose down`                                                                    |
+| Follow logs                            | `docker compose logs -f app`                                                             |
+| PHP error log                          | `docker compose exec app tail -n 50 /var/www/html/storage/logs/php-error.log`            |
+| Shell in the app container             | `docker compose exec app bash`                                                           |
+| Run migrations                         | `docker compose exec app php database/migrate.php`                                       |
+| Seed development data                  | `docker compose exec app php runseeder.php` (never in production)                        |
+| Refresh the autoloader                 | `composer dump-autoload -o` (on the host)                                                |
+| Database shell                         | `docker compose exec db sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" "$MYSQL_DATABASE"'` |
+| Run a tool in the tooling container    | `docker compose -f docker-compose.tools.yml run --rm tools <command>`                    |
+| Verify the hardened build              | `bash apply-and-verify.sh` (add `QUICK=1` to reuse the build cache)                      |
+| Return to dev after verifying          | `docker compose up -d --force-recreate`                                                  |
+| Full reset (**deletes database data**) | `docker compose down --volumes && docker compose up -d --build`                          |
 
 The production image has no Composer and its code is read-only, so `composer install` inside the app container is not available.
 
@@ -295,14 +295,14 @@ The production image has no Composer and its code is read-only, so `composer ins
 
 ### 8.1 Defence in depth
 
-| Layer | Controls |
-| :--- | :--- |
-| PHP runtime | `docker/php/security_php2shell.ini` (details below) |
-| Filesystem | Code is root-owned and read-only; only `storage/` is writable by `www-data`; `/var/www/html` itself is root-owned so the runtime user cannot replace code |
-| Container | Non-root user, port 8080, `cap_drop: ALL`, `no-new-privileges`, no Composer or git in the final image, no DB port published |
-| Apache | `ServerTokens Prod`, `ServerSignature Off`, `TraceEnable Off`, `autoindex` disabled, DocumentRoot `public/` only |
+| Layer       | Controls                                                                                                                                                                                                                               |
+| :---------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| PHP runtime | `docker/php/security_php2shell.ini` (details below)                                                                                                                                                                                    |
+| Filesystem  | Code is root-owned and read-only; only `storage/` is writable by `www-data`; `/var/www/html` itself is root-owned so the runtime user cannot replace code                                                                              |
+| Container   | Non-root user, port 8080, `cap_drop: ALL`, `no-new-privileges`, no Composer or git in the final image, no DB port published                                                                                                            |
+| Apache      | `ServerTokens Prod`, `ServerSignature Off`, `TraceEnable Off`, `autoindex` disabled, DocumentRoot `public/` only                                                                                                                       |
 | Application | `CsrfMiddleware`, `SecurityHeaders` middleware, output escaping with `e()`, typed exceptions (`app/Exceptions`). Rules: all SQL through PDO prepared statements (including `SqlHelper`); no debug output (`DebugHelper`) in production |
-| Secrets | `.env` excluded from images and git; passwords come from the environment |
+| Secrets     | `.env` excluded from images and git; passwords come from the environment                                                                                                                                                               |
 
 ### 8.2 What the PHP ini enforces
 
@@ -350,11 +350,11 @@ The script uses only `docker-compose.yml`, checks the static configuration (hard
 
 **Current:** PHP 8.6.x, pinned in `docker/php/Dockerfile` as `ARG PHP_VERSION` (`8.6.0`). PHP 8.6.0 was released on 19 Nov 2026.
 
-Per [php.net/supported-versions](https://www.php.net/supported-versions.php), each branch gets two years of active support and two more of security-only fixes. By that policy PHP 8.6 should receive active support until 31 Dec 2028 and security fixes until 31 Dec 2030; confirm the exact dates on php.net. For reference, PHP 8.5 is supported until 31 Dec 2029 and PHP 8.2 reaches end of life on 31 Dec 2026.
+Per [php.net/supported-versions](https://www.php.net/supported-versions.php), each branch gets two years of active support and two more of security-only fixes. By that policy PHP 8.6 should receive active support until 31 Dec 2028 and security fixes until 31 Dec 2030; confirm the exact dates on php.net. For reference, PHP 8.6 is supported until 31 Dec 2029 and PHP 8.2 reaches end of life on 31 Dec 2026.
 
-| Change | Cadence | Notes |
-| :--- | :--- | :--- |
-| Patch release (8.6.x) | Monthly, after a staging soak | Normally no code changes |
+| Change                                              | Cadence                                | Notes                                                                                                                     |
+| :-------------------------------------------------- | :------------------------------------- | :------------------------------------------------------------------------------------------------------------------------ |
+| Patch release (8.6.x)                               | Monthly, after a staging soak          | Normally no code changes                                                                                                  |
 | Minor release (for example 8.6 to the next version) | Yearly, after the first patch releases | One minor at a time; read the official migration guide for the target (`https://www.php.net/migrationXY`) and `UPGRADING` |
 
 **Upgrade checklist**
@@ -398,19 +398,19 @@ Per [php.net/supported-versions](https://www.php.net/supported-versions.php), ea
 
 ## 12. Troubleshooting
 
-| Symptom | Cause | Fix |
-| :--- | :--- | :--- |
-| Build error about a missing `docker/php/security.ini` | The legacy root `Dockerfile` was built | Delete it; compose builds `docker/php/Dockerfile` |
-| `install-php-extensions` fails after the PHP upgrade | An extension does not yet support PHP 8.6 (or ZTS) | Check the extension's release notes, pin a compatible version or wait for support |
-| `composer: command not found` in the app container | Production image has no Composer | Run Composer on the host or in the tooling container |
-| Build fails: `open_basedir restriction ... /usr/bin/composer` | Hardening ini copied into `base` or `vendor` stage | Keep `COPY ... security_php2shell.ini` only in the `production` stage |
-| Container `unhealthy`, `/healthz` returns 500 | PHP fatal error (see the PHP error log) | `docker compose exec app tail -n 50 /var/www/html/storage/logs/php-error.log` |
-| `TypeError: Core\Env::get(): Argument #2 ($default) must be of type ?string` | Non-string default with `strict_types` | `Env::get('DB_PORT', '3306')` |
-| Warning about `/.dockerenv` and `open_basedir` | Path not allowed | Keep `/.dockerenv` in `open_basedir` (already set) |
-| App unreachable on the published port | Mapping targets 80, Apache listens on 8080 | Map to `:8080` (`APP_PORT:8080`) |
-| `allow_url_fopen` or `display_errors` are On | Dev `custom_dev.ini` loads last | Expected in dev; use hardened mode to verify |
-| `Set DB_ROOT_PASSWORD in .env` | Missing variable | Add it to `.env` |
-| DB password change has no effect | MySQL reads it only on first volume creation | Reset the volume (deletes data): `docker compose down --volumes` |
-| Writes fail in hardened mode | Code is read-only | Write only under `storage/` |
-| `Found orphan containers (mvc_phpmyadmin)` | Hardened run after a dev run | Harmless; `docker compose up -d` restores dev mode |
-| Git Bash mangles container paths | MSYS path conversion | Prefix the command with `MSYS_NO_PATHCONV=1` |
+| Symptom                                                                      | Cause                                              | Fix                                                                               |
+| :--------------------------------------------------------------------------- | :------------------------------------------------- | :-------------------------------------------------------------------------------- |
+| Build error about a missing `docker/php/security.ini`                        | The legacy root `Dockerfile` was built             | Delete it; compose builds `docker/php/Dockerfile`                                 |
+| `install-php-extensions` fails after the PHP upgrade                         | An extension does not yet support PHP 8.6 (or ZTS) | Check the extension's release notes, pin a compatible version or wait for support |
+| `composer: command not found` in the app container                           | Production image has no Composer                   | Run Composer on the host or in the tooling container                              |
+| Build fails: `open_basedir restriction ... /usr/bin/composer`                | Hardening ini copied into `base` or `vendor` stage | Keep `COPY ... security_php2shell.ini` only in the `production` stage             |
+| Container `unhealthy`, `/healthz` returns 500                                | PHP fatal error (see the PHP error log)            | `docker compose exec app tail -n 50 /var/www/html/storage/logs/php-error.log`     |
+| `TypeError: Core\Env::get(): Argument #2 ($default) must be of type ?string` | Non-string default with `strict_types`             | `Env::get('DB_PORT', '3306')`                                                     |
+| Warning about `/.dockerenv` and `open_basedir`                               | Path not allowed                                   | Keep `/.dockerenv` in `open_basedir` (already set)                                |
+| App unreachable on the published port                                        | Mapping targets 80, Apache listens on 8080         | Map to `:8080` (`APP_PORT:8080`)                                                  |
+| `allow_url_fopen` or `display_errors` are On                                 | Dev `custom_dev.ini` loads last                    | Expected in dev; use hardened mode to verify                                      |
+| `Set DB_ROOT_PASSWORD in .env`                                               | Missing variable                                   | Add it to `.env`                                                                  |
+| DB password change has no effect                                             | MySQL reads it only on first volume creation       | Reset the volume (deletes data): `docker compose down --volumes`                  |
+| Writes fail in hardened mode                                                 | Code is read-only                                  | Write only under `storage/`                                                       |
+| `Found orphan containers (mvc_phpmyadmin)`                                   | Hardened run after a dev run                       | Harmless; `docker compose up -d` restores dev mode                                |
+| Git Bash mangles container paths                                             | MSYS path conversion                               | Prefix the command with `MSYS_NO_PATHCONV=1`                                      |
