@@ -28,8 +28,10 @@
     <arg name="encoding" value="utf-8"/>
     <arg name="parallel" value="8"/>
     <arg name="cache" value=".phpcs.cache"/>
+    <arg name="cache" value="/tmp/.phpcs.cache"/>
     <arg name="colors"/>
     <arg value="sp"/>
+    
     <ini name="memory_limit" value="512M"/>
 
     <!-- ===== 3. PHP version compatibility ===== -->
