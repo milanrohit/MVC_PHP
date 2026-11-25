@@ -1,6 +1,6 @@
 # My MVC Project
 
-Lightweight custom PHP 8.5+ MVC framework (PSR-4, PDO, zero runtime dependencies) with Vue 3 islands, jQuery, and Tailwind CSS v4.
+Lightweight custom PHP 8.6 MVC framework (PSR-4, PDO, zero runtime dependencies) with Vue 3 islands, jQuery, and Tailwind CSS v4.
 Runs identically in **Docker** and **XAMPP**.
 
 ---
@@ -82,9 +82,9 @@ npm run build        # or: npm run dev (watch mode)
 
 ---
 
-## Code Quality, PHP 8.5+ Standards & Security Gate (PHPCS / PHPCBF)
+## Code Quality, PHP 8.6 Standards & Security Gate (PHPCS / PHPCBF)
 
-This codebase is hardened to **PHP 8.5+**, **PSR-12 / PER Coding Style 2.0+**, **Slevomat Coding Standard**, and **SonarQube** clean-code rules (`declare(strict_types=1);`, typed constants, constructor property promotion, early exits, allowlisted SQL identifiers, and zero `eval`/`extract`/`md5`/`var_dump`/`@` suppression).
+This codebase is hardened to **PHP 8.6**, **PSR-12 / PER Coding Style 2.0+**, **Slevomat Coding Standard**, and **SonarQube** clean-code rules (`declare(strict_types=1);`, typed constants, constructor property promotion, early exits, allowlisted SQL identifiers, and zero `eval`/`extract`/`md5`/`var_dump`/`@` suppression).
 
 ### Run Quality Audit & Auto-Fix via Docker Tools Container
 

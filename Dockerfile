@@ -11,7 +11,7 @@ FROM php:${PHP_VERSION}-apache AS base
 COPY --from=mlocati/php-extension-installer:2 /usr/bin/install-php-extensions /usr/local/bin/
 
 # Install ONLY the extensions the app uses. Add pdo_sqlsrv here only if you really need MSSQL.
-# OPcache is built into PHP 8.5, so it only needs enabling via ini (no install step).
+# OPcache is built into PHP 8.6, so it only needs enabling via ini (no install step).
 RUN set -eux; \
     apt-get update; \
     apt-get install -y --no-install-recommends ca-certificates curl; \

@@ -3,7 +3,7 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:noNamespaceSchemaLocation="vendor/squizlabs/php_codesniffer/phpcs.xsd">
 
-    <description>PHP 8.5+ standard: PSR-12 base, modern syntax, SOLID guardrails, security rules.</description>
+    <description>PHP 8.6 standard: PSR-12 base, modern syntax, SOLID guardrails, security rules.</description>
 
     <!-- ===== 1. Scope ===== -->
     <file>app</file>
@@ -29,7 +29,7 @@
     <ini name="memory_limit" value="512M"/>
 
     <!-- ===== 3. PHP version compatibility ===== -->
-    <config name="testVersion" value="8.5-"/>
+    <config name="testVersion" value="8.6-"/>
     <rule ref="PHPCompatibility"/>
 
     <!-- ===== 4. Base style: PSR-12 ===== -->
