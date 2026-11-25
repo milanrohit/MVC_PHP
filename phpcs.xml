@@ -17,6 +17,10 @@
     <exclude-pattern>*/node_modules/*</exclude-pattern>
     <exclude-pattern>*/storage/*</exclude-pattern>
     <exclude-pattern>*/cache/*</exclude-pattern>
+    <rule ref="Internal.NoCodeFound">
+        <exclude-pattern>*/Views/*</exclude-pattern>
+    </rule>
+
 
     <!-- ===== 2. Runtime options (container friendly) ===== -->
     <arg name="basepath" value="."/>
@@ -176,6 +180,7 @@
             <property name="maxPercentage" value="30"/>
         </properties>
     </rule>
+
     <rule ref="Generic.CodeAnalysis.EmptyStatement"/>
     <rule ref="Generic.CodeAnalysis.UnconditionalIfStatement"/>
     <rule ref="Generic.CodeAnalysis.ForLoopWithTestFunctionCall"/>
