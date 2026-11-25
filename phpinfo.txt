@@ -1,5 +1,5 @@
 phpinfo()
-PHP Version => 8.5.12
+PHP Version => 8.6
 
 System => Linux a93d5b162f22 6.6.87.2-microsoft-standard-WSL2 #1 SMP PREEMPT_DYNAMIC Thu Jun  5 18:30:46 UTC 2025 x86_64
 Build Date => Oct 21 2026 15:49:40
@@ -40,7 +40,7 @@ Registered Stream Filters => zlib.*, convert.iconv.*, string.rot13, string.toupp
 
 This program makes use of the Zend Scripting Language Engine:
 Zend Engine v4.5.12, Copyright (c) Zend Technologies
-    with Zend OPcache v8.5.12, Copyright (c), by Zend Technologies
+    with Zend OPcache v8.6, Copyright (c), by Zend Technologies
 
 
  _______________________________________________________________________
@@ -50,7 +50,7 @@ Configuration
 
 Core
 
-PHP Version => 8.5.12
+PHP Version => 8.6
 
 Directive => Local Value => Master Value
 allow_url_fopen => On => On
@@ -328,7 +328,7 @@ mongodb.debug => no value => no value
 mysqlnd
 
 mysqlnd => enabled
-Version => mysqlnd 8.5.12
+Version => mysqlnd 8.6
 Compression => supported
 core SSL => supported
 extended SSL => supported
@@ -374,7 +374,7 @@ PDO drivers => sqlite, mysql, pgsql, sqlsrv
 pdo_mysql
 
 PDO Driver for MySQL => enabled
-Client API version => mysqlnd 8.5.12
+Client API version => mysqlnd 8.6
 
 Directive => Local Value => Master Value
 pdo_mysql.default_socket => no value => no value
@@ -426,7 +426,7 @@ POSIX support => enabled
 
 random
 
-Version => 8.5.12
+Version => 8.6
 
 readline
 
@@ -695,9 +695,9 @@ PHP_CFLAGS => -fstack-protector-strong -fpic -fpie -O2 -D_LARGEFILE_SOURCE -D_FI
 PHP_CPPFLAGS => -fstack-protector-strong -fpic -fpie -O2 -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64
 PHP_LDFLAGS => -Wl,-O1 -pie
 GPG_KEYS => 1198C0117593497A5EC5C199286AF1F9897469DC 49D9AF6BC72A80D6691719C8AA23F5BE9C7097D4 D95C03BC702BE9515344AE3374E44BC9067701A5
-PHP_VERSION => 8.5.12
-PHP_URL => https://www.php.net/distributions/php-8.5.12.tar.xz
-PHP_ASC_URL => https://www.php.net/distributions/php-8.5.12.tar.xz.asc
+PHP_VERSION => 8.6
+PHP_URL => https://www.php.net/distributions/php-8.6.tar.xz
+PHP_ASC_URL => https://www.php.net/distributions/php-8.6.tar.xz.asc
 PHP_SHA256 => 08bc2eba2a588654ade1357174aa646b761556c862dda0678345ee29ed481209
 HOME => /root
 
@@ -719,9 +719,9 @@ $_SERVER['PHP_CFLAGS'] => -fstack-protector-strong -fpic -fpie -O2 -D_LARGEFILE_
 $_SERVER['PHP_CPPFLAGS'] => -fstack-protector-strong -fpic -fpie -O2 -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64
 $_SERVER['PHP_LDFLAGS'] => -Wl,-O1 -pie
 $_SERVER['GPG_KEYS'] => 1198C0117593497A5EC5C199286AF1F9897469DC 49D9AF6BC72A80D6691719C8AA23F5BE9C7097D4 D95C03BC702BE9515344AE3374E44BC9067701A5
-$_SERVER['PHP_VERSION'] => 8.5.12
-$_SERVER['PHP_URL'] => https://www.php.net/distributions/php-8.5.12.tar.xz
-$_SERVER['PHP_ASC_URL'] => https://www.php.net/distributions/php-8.5.12.tar.xz.asc
+$_SERVER['PHP_VERSION'] => 8.6
+$_SERVER['PHP_URL'] => https://www.php.net/distributions/php-8.6.tar.xz
+$_SERVER['PHP_ASC_URL'] => https://www.php.net/distributions/php-8.6.tar.xz.asc
 $_SERVER['PHP_SHA256'] => 08bc2eba2a588654ade1357174aa646b761556c862dda0678345ee29ed481209
 $_SERVER['HOME'] => /root
 $_SERVER['PHP_SELF'] => 

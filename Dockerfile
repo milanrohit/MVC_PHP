@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # Pin the exact tag you have verified on Docker Hub (digest pinning is even better).
-ARG PHP_VERSION=8.5.12
+ARG PHP_VERSION=8.6
 
 # ==========================================
 # STAGE 1: base - runtime + extensions + config (shared by later stages)
@@ -62,8 +62,8 @@ RUN composer dump-autoload --no-dev --classmap-authoritative --no-scripts \
 FROM base AS production
 
 LABEL org.opencontainers.image.title="app" \
-      org.opencontainers.image.vendor="company" \
-      org.opencontainers.image.authors="infrastructure-team@company.com"
+    org.opencontainers.image.vendor="company" \
+    org.opencontainers.image.authors="infrastructure-team@company.com"
 
 WORKDIR /var/www/html
 

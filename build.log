@@ -9,7 +9,7 @@
 #3 [internal] load metadata for docker.io/library/composer:2
 #3 ...
 
-#4 [internal] load metadata for docker.io/library/php:8.5.12-apache
+#4 [internal] load metadata for docker.io/library/php:8.6-apache
 #4 DONE 1.0s
 
 #3 [internal] load metadata for docker.io/library/composer:2
@@ -27,8 +27,8 @@
 #7 resolve docker.io/library/composer:2@sha256:da624c2c705d54e2f5a9bb77a5dc6c7d091711433ebefd7035672e84c2010fee 0.2s done
 #7 CACHED
 
-#8 [stage-0 1/9] FROM docker.io/library/php:8.5.12-apache@sha256:e25ab14ef2cfec3bab9dd66c6cf871691146f428fbd72241b1a2c38fcacf92f5
-#8 resolve docker.io/library/php:8.5.12-apache@sha256:e25ab14ef2cfec3bab9dd66c6cf871691146f428fbd72241b1a2c38fcacf92f5 0.2s done
+#8 [stage-0 1/9] FROM docker.io/library/php:8.6-apache@sha256:e25ab14ef2cfec3bab9dd66c6cf871691146f428fbd72241b1a2c38fcacf92f5
+#8 resolve docker.io/library/php:8.6-apache@sha256:e25ab14ef2cfec3bab9dd66c6cf871691146f428fbd72241b1a2c38fcacf92f5 0.2s done
 #8 CACHED
 
 #6 [internal] load build context
@@ -69,7 +69,28 @@
 #9 7.646 debconf: falling back to frontend: Noninteractive
 #9 8.925 Fetched 408 kB in 0s (1000 kB/s)
 #9 9.017 Selecting previously unselected package unzip.
-#9 9.017 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 15596 files and directories currently installed.)
+#9 9.017 (Reading database ... 
+(Reading database ... 5%
+(Reading database ... 10%
+(Reading database ... 15%
+(Reading database ... 20%
+(Reading database ... 25%
+(Reading database ... 30%
+(Reading database ... 35%
+(Reading database ... 40%
+(Reading database ... 45%
+(Reading database ... 50%
+(Reading database ... 55%
+(Reading database ... 60%
+(Reading database ... 65%
+(Reading database ... 70%
+(Reading database ... 75%
+(Reading database ... 80%
+(Reading database ... 85%
+(Reading database ... 90%
+(Reading database ... 95%
+(Reading database ... 100%
+(Reading database ... 15596 files and directories currently installed.)
 #9 9.048 Preparing to unpack .../unzip_6.0-29+deb13u1_amd64.deb ...
 #9 9.075 Unpacking unzip (6.0-29+deb13u1) ...
 #9 9.165 Selecting previously unselected package zip.

@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-ARG PHP_VERSION=8.5.12
+ARG PHP_VERSION=8.6
 
 # ==========================================
 # STAGE 1: base - runtime + extensions + non-restrictive config

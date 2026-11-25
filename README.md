@@ -15,13 +15,14 @@ git clone <YOUR_REPO_URL> MVC_PHP
 cd MVC_PHP
 ```
 
-*(If any file on Windows ever gets saved with `\r\n`, convert it back with `dos2unix app/**/*.php core/*.php` or run PHPCBF.)*
+_(If any file on Windows ever gets saved with `\r\n`, convert it back with `dos2unix app/\*\*/_.php core/_.php` or run PHPCBF.)_
 
 ---
 
 ## Option A: Docker (Recommended)
 
 ### 1. Check for Port Conflicts (If Running Other Docker Projects)
+
 If another project (such as `mykart`) is already running on your machine, check active ports first:
 
 ```bash
@@ -47,14 +48,14 @@ docker compose exec app php runseeder.php
 docker compose --profile tools up -d
 ```
 
-* **App:** http://localhost:8088
-* **MySQL (from host):** `127.0.0.1:3309`
-* **phpMyAdmin:** http://localhost:8084
-*(Host ports `8088`/`3309`/`8084` are used on purpose so they never clash with XAMPP's `80`/`3306`.)*
+- **App:** http://localhost:8088
+- **MySQL (from host):** `127.0.0.1:3309`
+- **phpMyAdmin:** http://localhost:8084
+  _(Host ports `8088`/`3309`/`8084` are used on purpose so they never clash with XAMPP's `80`/`3306`.)_
 
 ---
 
-## Option B: XAMPP (PHP 8.5.12 + Apache + MySQL)
+## Option B: XAMPP (PHP 8.6 + Apache + MySQL)
 
 1. Place the project folder in `htdocs/my-mvc-project` and ensure `mod_rewrite` is enabled (default on).
 2. Run `cp .env.example .env` and set `DB_HOST=127.0.0.1`, `DB_USERNAME=root`, and `DB_PASSWORD=` (blank by default).
@@ -101,15 +102,15 @@ docker compose -f docker-compose.tools.yml run --rm tools vendor/bin/phpcs --no-
 
 ## Architecture & Request Lifecycle
 
-* **Entry Point:** `public/index.php` -> `Core\Application` (loads `.env` and `config/`, binds DI container, starts hardened session, registers `Core\ExceptionHandler`, and dispatches router).
-* **Request Pipeline:** `Router` -> `SecurityHeaders` -> `CsrfMiddleware` -> `Controller` -> `Service` -> `Repository (PDO)` -> `Model/DTO`.
-* **Directory Layout:**
-  * `core/` — Framework engine (`Application`, `Router`, `Request`, `Response`, `View`, `ExceptionHandler`, `HttpException`, `Database`).
-  * `app/Controllers/` — Thin HTTP controllers (`Request` -> `Service` -> `Response`).
-  * `app/Services/` — Core business logic and `SqlHelper::transactional()` boundaries.
-  * `app/Repositories/` — Interface-bound PDO data access (`UserRepositoryInterface` -> `UserRepository`).
-  * `app/Exceptions/` — Typed HTTP & domain exceptions (`AppException`, `ValidationException`, `AuthenticationException`, `AuthorizationException`, `NotFoundException`, `ConflictException`, `DomainException`, `RuntimeException`, `SqlHelperConnectionException`).
-  * `app/Helpers/` — Pure, stateless utilities (`ConstantHelper`, `ValidatorHelper`, `SqlHelper`, `DebugHelper`).
-* **CSRF Protection:** `<meta name="csrf-token">` + jQuery sends `X-CSRF-TOKEN`; HTML forms use `<?= csrf_field() ?>`.
-* **Vue 3 Islands:** Add `<div data-vue="Counter" data-props='{"start":1}'>` in any view and drop components into `resources/js/components/`.
-* **Database Host Resolution:** Uses `DB_HOST` if set in `.env`, else `db` inside Docker, else `127.0.0.1`.
+- **Entry Point:** `public/index.php` -> `Core\Application` (loads `.env` and `config/`, binds DI container, starts hardened session, registers `Core\ExceptionHandler`, and dispatches router).
+- **Request Pipeline:** `Router` -> `SecurityHeaders` -> `CsrfMiddleware` -> `Controller` -> `Service` -> `Repository (PDO)` -> `Model/DTO`.
+- **Directory Layout:**
+  - `core/` — Framework engine (`Application`, `Router`, `Request`, `Response`, `View`, `ExceptionHandler`, `HttpException`, `Database`).
+  - `app/Controllers/` — Thin HTTP controllers (`Request` -> `Service` -> `Response`).
+  - `app/Services/` — Core business logic and `SqlHelper::transactional()` boundaries.
+  - `app/Repositories/` — Interface-bound PDO data access (`UserRepositoryInterface` -> `UserRepository`).
+  - `app/Exceptions/` — Typed HTTP & domain exceptions (`AppException`, `ValidationException`, `AuthenticationException`, `AuthorizationException`, `NotFoundException`, `ConflictException`, `DomainException`, `RuntimeException`, `SqlHelperConnectionException`).
+  - `app/Helpers/` — Pure, stateless utilities (`ConstantHelper`, `ValidatorHelper`, `SqlHelper`, `DebugHelper`).
+- **CSRF Protection:** `<meta name="csrf-token">` + jQuery sends `X-CSRF-TOKEN`; HTML forms use `<?= csrf_field() ?>`.
+- **Vue 3 Islands:** Add `<div data-vue="Counter" data-props='{"start":1}'>` in any view and drop components into `resources/js/components/`.
+- **Database Host Resolution:** Uses `DB_HOST` if set in `.env`, else `db` inside Docker, else `127.0.0.1`.
