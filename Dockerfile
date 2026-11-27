@@ -11,6 +11,7 @@ COPY --from=mlocati/php-extension-installer:2 /usr/bin/install-php-extensions /u
 # OPcache is built into PHP 8.6, so it only needs enabling via ini (no install step).
 RUN set -eux; \
     apt-get update; \
+    apt-get upgrade -y --no-install-recommends; \
     apt-get install -y --no-install-recommends ca-certificates curl; \
     rm -rf /var/lib/apt/lists/*; \
     install-php-extensions pdo_mysql zip mbstring; \

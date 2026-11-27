@@ -8,11 +8,17 @@ ARG PHP_VERSION=8.6
 # ==========================================
 FROM php:${PHP_VERSION}-apache AS base
 
+# Build-time only (ARG does not persist into the running container)
+ARG DEBIAN_FRONTEND=noninteractive
+
 COPY --from=mlocati/php-extension-installer:2 /usr/bin/install-php-extensions /usr/local/bin/
 
+# apt-get upgrade pulls in Debian security fixes that are newer than the
+# upstream php image (e.g. libzstd1 CVE). Every later stage inherits them.
 RUN set -eux; \
     chown root:root /var/www/html; \
     apt-get update; \
+    apt-get upgrade -y --no-install-recommends; \
     apt-get install -y --no-install-recommends ca-certificates curl; \
     rm -rf /var/lib/apt/lists/*; \
     install-php-extensions pdo_mysql zip mbstring; \
@@ -33,8 +39,11 @@ COPY docker/apache/vhost.conf /etc/apache2/sites-available/000-default.conf
 
 # ==========================================
 # STAGE 2: vendor - Composer, git and unzip live here only (unhardened)
+# Not shipped: only /app is copied into production.
 # ==========================================
 FROM base AS vendor
+
+ARG DEBIAN_FRONTEND=noninteractive
 
 ENV COMPOSER_ALLOW_SUPERUSER=1 \
     COMPOSER_NO_INTERACTION=1 \
@@ -43,7 +52,6 @@ ENV COMPOSER_ALLOW_SUPERUSER=1 \
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 RUN set -eux; \
-    chown root:root /var/www/html; \
     apt-get update; \
     apt-get install -y --no-install-recommends unzip git; \
     rm -rf /var/lib/apt/lists/*
@@ -87,8 +95,8 @@ RUN set -eux; \
     sed -i 's/^Listen 80$/Listen 8080/' /etc/apache2/ports.conf; \
     sed -i 's/<VirtualHost \*:80>/<VirtualHost *:8080>/' /etc/apache2/sites-available/000-default.conf
 
+# Non-root: www-data is uid/gid 33 in the Debian-based php images
 USER 33:33
-
 
 EXPOSE 8080
 
