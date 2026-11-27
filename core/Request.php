@@ -12,7 +12,7 @@ final class Request
         private readonly array $server,
         private readonly array $query,
         private readonly array $post,
-        private readonly string $rawBody = ''
+        private readonly string $rawBody = '',
     ) {
     }
 
@@ -26,7 +26,7 @@ final class Request
         $m = strtoupper($this->server['REQUEST_METHOD'] ?? 'GET');
         if ($m === 'POST' && isset($this->post['_method'])) {
             $override = strtoupper((string) $this->post['_method']);
-            if (in_array($override, ['PUT', 'PATCH', 'DELETE'], true)) {
+            if (\in_array($override, ['PUT', 'PATCH', 'DELETE'], true)) {
                 return $override;
             }
         }
@@ -45,7 +45,7 @@ final class Request
         }
 
         $uriPath = parse_url($this->server['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
-        $scriptDir = rtrim(str_replace('\\', '/', dirname($this->server['SCRIPT_NAME'] ?? '')), '/');
+        $scriptDir = rtrim(str_replace('\\', '/', \dirname($this->server['SCRIPT_NAME'] ?? '')), '/');
 
         $candidates = [$scriptDir];
         if (str_ends_with($scriptDir, '/public')) {
@@ -65,7 +65,7 @@ final class Request
         $uriPath = parse_url($this->server['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
         $base = $this->basePath();
         if ($base !== '' && str_starts_with($uriPath, $base)) {
-            $uriPath = substr($uriPath, strlen($base));
+            $uriPath = substr($uriPath, \strlen($base));
         }
         $uriPath = '/' . trim($uriPath, '/');
         return $uriPath === '' ? '/' : $uriPath;
@@ -88,7 +88,7 @@ final class Request
             if (str_contains($this->header('Content-Type') ?? '', 'application/json') && $this->rawBody !== '') {
                 $decoded = json_decode($this->rawBody, true);
             }
-            $this->json = is_array($decoded) ? $decoded : [];
+            $this->json = \is_array($decoded) ? $decoded : [];
         }
         return $this->json;
     }

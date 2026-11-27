@@ -17,6 +17,14 @@ concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
+env:
+  # Keep in step with ARG PHP_VERSION in docker/php/Dockerfile.
+  PHP_VERSION: "8.6"
+  # Pinned so Semgrep engine/rule-format changes cannot break CI without a code change.
+  # Bump deliberately: docker run --rm semgrep/semgrep:<new> semgrep --version
+  SEMGREP_IMAGE: "semgrep/semgrep:1.174.0"
+  APP_PORT: "8088"
+
 jobs:
   code-quality-and-sast:
     name: PHP Quality, Audit & SAST
@@ -29,17 +37,27 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Setup PHP 8.6
+      - name: Setup PHP ${{ env.PHP_VERSION }}
         uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
         with:
-          # Keep in step with ARG PHP_VERSION in docker/php/Dockerfile.
-          php-version: "8.6"
+          php-version: ${{ env.PHP_VERSION }}
           extensions: pdo, pdo_mysql, mbstring
           tools: composer:v2
           coverage: none
 
       - name: Validate composer.json and composer.lock
         run: composer validate --strict
+
+      - name: Get Composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Composer packages
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: composer-${{ runner.os }}-php${{ env.PHP_VERSION }}-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-${{ runner.os }}-php${{ env.PHP_VERSION }}-
 
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress --no-interaction
@@ -50,18 +68,28 @@ jobs:
       - name: Run PHP_CodeSniffer (PSR-12)
         run: vendor/bin/phpcs --standard=phpcs.xml
 
+      - name: Static Analysis (PHPStan)
+        # Runs when a PHPStan config is committed (requires phpstan/phpstan in require-dev).
+        if: hashFiles('phpstan.neon', 'phpstan.neon.dist', 'phpstan.dist.neon') != ''
+        run: vendor/bin/phpstan analyse --no-progress --error-format=github
+
+      - name: Unit Tests (PHPUnit)
+        # Runs when a PHPUnit config is committed (requires phpunit/phpunit in require-dev).
+        if: hashFiles('phpunit.xml', 'phpunit.xml.dist', 'phpunit.dist.xml') != ''
+        run: vendor/bin/phpunit --no-coverage
+
       - name: Static Application Security Testing (Semgrep)
-        # TODO: pin semgrep/semgrep to a version or digest so rule updates cannot
-        # break CI without a code change (docker run --rm semgrep/semgrep:latest semgrep --version).
         run: |
           docker run --rm \
-            -v "${{ github.workspace }}:/src" \
+            -v "${GITHUB_WORKSPACE}:/src" \
             -w /src \
-            semgrep/semgrep:latest \
+            "${SEMGREP_IMAGE}" \
             semgrep scan \
               --config p/php \
               --config p/owasp-top-ten \
               --config p/secrets \
+              --exclude vendor \
+              --metrics off \
               --error
 
   container-build-and-hardening:
@@ -86,6 +114,7 @@ jobs:
         run: |
           docker build \
             --pull \
+            --build-arg PHP_VERSION="${PHP_VERSION}" \
             -f docker/php/Dockerfile \
             --target production \
             -t mvc_php:ci \
@@ -98,26 +127,33 @@ jobs:
           format: "table"
           exit-code: "1"
           ignore-unfixed: true
+          vuln-type: "os,library"
           severity: "CRITICAL,HIGH"
+
+      - name: Generate DB root password
+        # Generated once and shared with later steps (masked in logs) so the
+        # logs/cleanup steps talk to the same compose project with the same env.
+        run: |
+          DB_ROOT_PASSWORD="$(openssl rand -hex 16)"
+          echo "::add-mask::${DB_ROOT_PASSWORD}"
+          echo "DB_ROOT_PASSWORD=${DB_ROOT_PASSWORD}" >> "$GITHUB_ENV"
 
       - name: Run Hardening Verification Script
         timeout-minutes: 15
         env:
-          APP_PORT: "8088"
           # Reuse the layer cache from the build step above (fresh runner, so it is
           # the same fresh build). Remove to force a --no-cache rebuild.
           QUICK: "1"
         run: |
           set -euo pipefail
-          DB_ROOT_PASSWORD="$(openssl rand -hex 16)"
-          echo "::add-mask::${DB_ROOT_PASSWORD}"
-          export DB_ROOT_PASSWORD
-          chmod +x apply-and-verify.sh
           bash apply-and-verify.sh
 
-      - name: Show container logs on failure
+      - name: Show container status and logs on failure
         if: failure()
-        env:
-          DB_ROOT_PASSWORD: "unused-for-logs"
-          APP_PORT: "8088"
-        run: docker compose -f docker-compose.yml logs --tail 100
+        run: |
+          docker compose -f docker-compose.yml ps -a || true
+          docker compose -f docker-compose.yml logs --no-color --tail 100 || true
+
+      - name: Tear down containers
+        if: always()
+        run: docker compose -f docker-compose.yml down -v --remove-orphans || true

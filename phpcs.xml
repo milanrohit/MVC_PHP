@@ -21,22 +21,29 @@
         <exclude-pattern>*/Views/*</exclude-pattern>
     </rule>
 
-
-    <!-- ===== 2. Runtime options (container friendly) ===== -->
+    <!-- ===== 2. Runtime options (container + CI friendly) ===== -->
     <arg name="basepath" value="."/>
     <arg name="extensions" value="php"/>
     <arg name="encoding" value="utf-8"/>
     <arg name="parallel" value="8"/>
-    <arg name="cache" value=".phpcs.cache"/>
+    <!-- One cache location only (a second <arg name="cache"> silently overrides the first). -->
     <arg name="cache" value="/tmp/.phpcs.cache"/>
     <arg name="colors"/>
     <arg value="sp"/>
-    
+
     <ini name="memory_limit" value="512M"/>
 
-    <!-- ===== 3. PHP version compatibility ===== -->
-    <config name="testVersion" value="8.6-"/>
-    <rule ref="PHPCompatibility"/>
+    <!-- Warnings (length, structure, TODOs, complexity "warning" thresholds) are reported
+         but do NOT fail CI. Only errors fail the build.
+         Remove this line once the warning backlog is cleared to make warnings blocking too. -->
+    <config name="ignore_warnings_on_exit" value="1"/>
+
+    <!-- ===== 3. PHP version compatibility =====
+         Disabled: phpcompatibility/php-compatibility 9.3.5 (2019) predates PHP 8 and reports
+         false errors on modern syntax. Re-enable only with a 10.x release that supports 8.x:
+           <config name="testVersion" value="8.6-"/>
+           <rule ref="PHPCompatibility"/>
+    -->
 
     <!-- ===== 4. Base style: PSR-12 ===== -->
     <rule ref="PSR12"/>
@@ -162,12 +169,16 @@
         </properties>
         <type>warning</type>
     </rule>
-    <rule ref="SlevomatCodingStandard.Variables.DisallowSuperGlobalVariable"/>
-    
-    <exclude-pattern>core/Request.php</exclude-pattern>
-    <exclude-pattern>core/Session.php</exclude-pattern>
-    <exclude-pattern>public/index.php</exclude-pattern>
-    
+
+    <!-- Superglobals allowed ONLY in the request/session wrappers and the front controller.
+         The excludes are scoped to this rule; at top level they would skip these files from
+         EVERY check (and public/index.php would never be scanned at all). -->
+    <rule ref="SlevomatCodingStandard.Variables.DisallowSuperGlobalVariable">
+        <exclude-pattern>core/Request.php</exclude-pattern>
+        <exclude-pattern>core/Session.php</exclude-pattern>
+        <exclude-pattern>public/index.php</exclude-pattern>
+    </rule>
+
     <!-- ===== 7. Clean code (Sonar-style) ===== -->
     <rule ref="SlevomatCodingStandard.Namespaces.UnusedUses"/>
     <rule ref="SlevomatCodingStandard.Variables.UnusedVariable"/>

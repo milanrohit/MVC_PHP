@@ -1,6 +1,3 @@
-# syntax=docker/dockerfile:1
-
-# Pin the exact tag you have verified on Docker Hub (digest pinning is even better).
 ARG PHP_VERSION=8.6
 
 # ==========================================
