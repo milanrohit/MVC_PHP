@@ -24,6 +24,8 @@ env:
   # Bump deliberately: docker run --rm semgrep/semgrep:<new> semgrep --version
   SEMGREP_IMAGE: "semgrep/semgrep:1.174.0"
   APP_PORT: "8088"
+  # NOTE: DB passwords are NOT set here. They are generated per run in the
+  # "Generate DB passwords" step (the env context is not available at this level).
 
 jobs:
   code-quality-and-sast:
@@ -41,7 +43,7 @@ jobs:
         uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
         with:
           php-version: ${{ env.PHP_VERSION }}
-          extensions: pdo, pdo_mysql, mbstring
+          extensions: pdo, pdo_mysql, mbstring, zip
           tools: composer:v2
           coverage: none
 
@@ -104,6 +106,16 @@ jobs:
         with:
           persist-credentials: false
 
+      # Generated FIRST so every later step (including failure/cleanup steps)
+      # sees the same values. Masked in logs; unique per run.
+      - name: Generate DB passwords
+        run: |
+          for v in DB_ROOT_PASSWORD DB_PASSWORD; do
+            p="$(openssl rand -hex 16)"
+            echo "::add-mask::${p}"
+            echo "${v}=${p}" >> "$GITHUB_ENV"
+          done
+
       - name: Lint Dockerfile (Hadolint)
         uses: hadolint/hadolint-action@06be81baf89a55ffd0e24b8f04a4185738dd3387 # v3.5.0
         with:
@@ -129,14 +141,6 @@ jobs:
           ignore-unfixed: true
           vuln-type: "os,library"
           severity: "CRITICAL,HIGH"
-
-      - name: Generate DB root password
-        # Generated once and shared with later steps (masked in logs) so the
-        # logs/cleanup steps talk to the same compose project with the same env.
-        run: |
-          DB_ROOT_PASSWORD="$(openssl rand -hex 16)"
-          echo "::add-mask::${DB_ROOT_PASSWORD}"
-          echo "DB_ROOT_PASSWORD=${DB_ROOT_PASSWORD}" >> "$GITHUB_ENV"
 
       - name: Run Hardening Verification Script
         timeout-minutes: 15

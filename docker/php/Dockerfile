@@ -15,7 +15,7 @@ RUN set -eux; \
     apt-get update; \
     apt-get install -y --no-install-recommends ca-certificates curl; \
     rm -rf /var/lib/apt/lists/*; \
-    install-php-extensions pdo_mysql zip; \
+    install-php-extensions pdo_mysql zip mbstring; \
     rm -f /usr/local/bin/install-php-extensions; \
     a2enmod rewrite headers remoteip; \
     a2dismod -f autoindex; \
