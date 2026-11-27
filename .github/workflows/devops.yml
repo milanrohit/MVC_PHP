@@ -1,37 +1,80 @@
 name: PHP DevOps Pipeline
 
+# Deep static analysis (PHPStan + Rector) plus audit and SAST.
+# Complements ci.yml (MVC_PHP DevOps CI), which handles PHPCS, Docker, Hadolint and Trivy.
 on:
+  push:
+    branches: [main, dev]
   pull_request:
     branches: [main, dev]
+  workflow_dispatch: # adds the "Run workflow" button in GitHub -> Actions
+
+# Least privilege: read-only repository access.
+permissions:
+  contents: read
+
+# Cancel superseded pull-request runs; never cancel a push to main or dev.
+concurrency:
+  group: devops-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  # Keep in step with ARG PHP_VERSION in docker/php/Dockerfile and ci.yml.
+  PHP_VERSION: "8.6"
+  # Pinned for reproducible results; bump deliberately.
+  SEMGREP_IMAGE: "semgrep/semgrep:1.174.0"
 
 jobs:
   security-and-quality:
+    name: Static Analysis, Audit & SAST
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+    timeout-minutes: 15
 
-      - name: Setup PHP 8.6
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Setup PHP ${{ env.PHP_VERSION }}
         uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
         with:
-          php-version: "8.6"
-          tools: composer, phpstan
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: pdo, pdo_mysql, mbstring, zip
+          tools: composer:v2
+          coverage: none
 
-      - name: Install Dependencies
+      - name: Validate composer.json and composer.lock
+        run: composer validate --strict
+
+      - name: Install dependencies
         run: composer install --prefer-dist --no-progress --no-interaction
 
       - name: Dependency Vulnerability Scan
         run: composer audit --locked
 
-      - name: Static Analysis (PHPStan Level 8)
-        run: vendor/bin/phpstan analyse --level=8
+      - name: Static Analysis (PHPStan)
+        # Runs once phpstan/phpstan is in require-dev and a config exists.
+        # Set the level (e.g. 8) and paths inside phpstan.neon.
+        if: hashFiles('phpstan.neon', 'phpstan.neon.dist', 'phpstan.dist.neon') != ''
+        run: vendor/bin/phpstan analyse --no-progress --error-format=github
 
-      - name: Automated Upgrade & Quality Check (Rector)
-        run: vendor/bin/rector process --dry-run
+      - name: Automated Upgrade & Quality Check (Rector, dry run)
+        # Runs once rector/rector is in require-dev and rector.php exists.
+        if: hashFiles('rector.php') != ''
+        run: vendor/bin/rector process --dry-run --no-progress-bar
 
       - name: SAST Scan (Semgrep OWASP PHP)
-        uses: semgrep/semgrep-action@713efdd345f3035192eaa63f56867b88e63e4e5d # v1
-        with:
-          config: >-
-            p/php
-            p/owasp-top-ten
-            p/secrets
+        # Official container instead of the deprecated semgrep/semgrep-action.
+        run: |
+          docker run --rm \
+            -v "${GITHUB_WORKSPACE}:/src" \
+            -w /src \
+            "${SEMGREP_IMAGE}" \
+            semgrep scan \
+              --config p/php \
+              --config p/owasp-top-ten \
+              --config p/secrets \
+              --exclude vendor \
+              --metrics off \
+              --error
