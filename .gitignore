@@ -27,3 +27,4 @@ phpcs-report.txt
 .phpcs.cache
 *.log
 !storage/logs/.gitkeep
+*.out

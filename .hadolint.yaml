@@ -1,0 +1,4 @@
+ignored:
+  # apt packages are intentionally not version-pinned: the php base image is the
+  # version control point, and Debian mirrors drop old package versions.
+  - DL3008

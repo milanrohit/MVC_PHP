@@ -5,26 +5,38 @@ on:
     branches: [main, dev]
   pull_request:
     branches: [main, dev]
+  workflow_dispatch:
 
+# Least privilege: the jobs only read the repository.
+# Add "security-events: write" to a job only if it uploads SARIF results.
 permissions:
   contents: read
-  security-events: write
+
+# Cancel superseded pull-request runs; never cancel a push to main or dev.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   code-quality-and-sast:
     name: PHP Quality, Audit & SAST
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
 
       - name: Setup PHP 8.6
         uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
         with:
+          # Keep in step with ARG PHP_VERSION in docker/php/Dockerfile.
           php-version: "8.6"
           extensions: pdo, pdo_mysql, mbstring
-          tools: composer, phpcs
+          tools: composer:v2
+          coverage: none
 
       - name: Validate composer.json and composer.lock
         run: composer validate --strict
@@ -39,6 +51,8 @@ jobs:
         run: vendor/bin/phpcs --standard=phpcs.xml
 
       - name: Static Application Security Testing (Semgrep)
+        # TODO: pin semgrep/semgrep to a version or digest so rule updates cannot
+        # break CI without a code change (docker run --rm semgrep/semgrep:latest semgrep --version).
         run: |
           docker run --rm \
             -v "${{ github.workspace }}:/src" \
@@ -54,19 +68,24 @@ jobs:
     name: Build, Scan & Verify Hardened Container
     runs-on: ubuntu-latest
     needs: code-quality-and-sast
+    timeout-minutes: 30
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
 
       - name: Lint Dockerfile (Hadolint)
         uses: hadolint/hadolint-action@06be81baf89a55ffd0e24b8f04a4185738dd3387 # v3.5.0
         with:
           dockerfile: docker/php/Dockerfile
+          config: .hadolint.yaml
 
       - name: Build Production Docker Image
         run: |
           docker build \
+            --pull \
             -f docker/php/Dockerfile \
             --target production \
             -t mvc_php:ci \
@@ -82,9 +101,23 @@ jobs:
           severity: "CRITICAL,HIGH"
 
       - name: Run Hardening Verification Script
+        timeout-minutes: 15
         env:
-          DB_ROOT_PASSWORD: "ci_temporary_strong_password_123!"
           APP_PORT: "8088"
+          # Reuse the layer cache from the build step above (fresh runner, so it is
+          # the same fresh build). Remove to force a --no-cache rebuild.
+          QUICK: "1"
         run: |
+          set -euo pipefail
+          DB_ROOT_PASSWORD="$(openssl rand -hex 16)"
+          echo "::add-mask::${DB_ROOT_PASSWORD}"
+          export DB_ROOT_PASSWORD
           chmod +x apply-and-verify.sh
           bash apply-and-verify.sh
+
+      - name: Show container logs on failure
+        if: failure()
+        env:
+          DB_ROOT_PASSWORD: "unused-for-logs"
+          APP_PORT: "8088"
+        run: docker compose -f docker-compose.yml logs --tail 100

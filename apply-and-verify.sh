@@ -25,10 +25,10 @@ echo "== 1. Static checks =="
 [ -f "$DF" ]  || { echo "$DF not found."; exit 1; }
 [ -f "$INI" ] || { echo "$INI not found."; exit 1; }
 
-if grep -qE '^DB_ROOT_PASSWORD=.+' .env 2>/dev/null; then
-  ok ".env defines DB_ROOT_PASSWORD"
+if grep -qE '^DB_ROOT_PASSWORD=.+' .env 2>/dev/null || [ -n "${DB_ROOT_PASSWORD:-}" ]; then
+  ok "DB_ROOT_PASSWORD is set (.env or environment)"
 else
-  bad ".env is missing DB_ROOT_PASSWORD (add: echo 'DB_ROOT_PASSWORD=secret' >> .env)"
+  bad "DB_ROOT_PASSWORD is not set (add it to .env or export it)"
 fi
 
 prod_line=$(grep -nE '^FROM .* AS production' "$DF" | head -1 | cut -d: -f1)
