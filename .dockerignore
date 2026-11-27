@@ -1,22 +1,47 @@
+# ===== Version control & CI =====
 .git
-node_modules
-vendor
-.env
-storage/logs/*
-.git
+.gitignore
+.gitattributes
 .github
+
+# ===== Editors / OS =====
 .vscode
+.idea
+**/.DS_Store
+**/Thumbs.db
+
+# ===== Secrets (never bake into an image; pass at runtime) =====
 .env
 .env.*
-docker-compose*.yml
+
+# ===== Dependencies (installed fresh inside the vendor stage) =====
+vendor
+node_modules
+
+# ===== Docker / deploy tooling (not needed inside the image) =====
 Dockerfile
+docker-compose*.yml
+.dockerignore
+.hadolint.yaml
 apply-and-verify.sh
-*.log
-*.bak
-phpinfo.txt
-phpcs-report.txt
+
+# ===== Dev / QA tooling =====
+tests
+phpcs.xml
+phpstan.neon*
+phpunit.xml*
+rector.php
 .phpcs.cache
+phpcs-report.txt
+.semgrepignore
+
+# ===== Runtime data (recreated in the production stage) =====
+storage/logs/*
+
+# ===== Junk / debug files =====
+**/*.log
+**/*.bak
+**/*.md
+phpinfo.txt
 project_structure*.txt
 x.php
-node_modules
-vendor

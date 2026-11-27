@@ -85,11 +85,12 @@ RUN set -eux; \
     mkdir -p "$APACHE_RUN_DIR"; \
     chown www-data:www-data "$APACHE_RUN_DIR"
 
-USER www-data
+
+USER 33:33
 
 EXPOSE 8080
 
 HEALTHCHECK --interval=20s --timeout=4s --start-period=15s --retries=3 \
-    CMD curl -fsS http://localhost:8080/healthz || exit 1
+    CMD ["sh", "-c", "curl -fsS http://localhost:8080/healthz || exit 1"]
 
-# Apache and PHP run as www-data; port 8080 does not require root privileges.
+# Apache and PHP run as www-data (uid 33); port 8080 does not require root privileges.

@@ -87,9 +87,10 @@ RUN set -eux; \
     sed -i 's/^Listen 80$/Listen 8080/' /etc/apache2/ports.conf; \
     sed -i 's/<VirtualHost \*:80>/<VirtualHost *:8080>/' /etc/apache2/sites-available/000-default.conf
 
-USER www-data
+USER 33:33
+
 
 EXPOSE 8080
 
 HEALTHCHECK --interval=20s --timeout=4s --start-period=15s --retries=3 \
-    CMD curl -fsS http://localhost:8080/healthz || exit 1
+    CMD ["sh", "-c", "curl -fsS http://localhost:8080/healthz || exit 1"]
